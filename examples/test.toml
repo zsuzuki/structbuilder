@@ -1,0 +1,22 @@
+namespace = "app"
+#include = ["cstdint","app.h"]
+local_include = ["local.h"]
+
+[struct]
+name="test"
+maxsize=32
+
+[[struct.member]]
+comment="current working state"
+name="state"
+type="uint8_t"
+[[struct.member]]
+comment="member's name in class"
+name="name"
+type="char"
+array=32
+[[struct.member]]
+comment="progress rate"
+name="progress"
+type="float"
+default=120.5
