@@ -3,6 +3,7 @@ C++ struct builder by toml(by Golang)
 
 # package
 
+used toml package:
 https://github.com/pelletier/go-toml
 
 # usage
