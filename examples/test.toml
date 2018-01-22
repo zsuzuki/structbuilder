@@ -1,5 +1,5 @@
 namespace = "app"
-#include = ["cstdint","app.h"]
+include = ["cstdint","app.h"]
 local_include = ["local.h"]
 
 [struct]
@@ -20,3 +20,13 @@ comment="progress rate"
 name="progress"
 type="float"
 default=120.5
+[[struct.member]]
+comment="member's ID"
+name="id"
+type="uint16_t"
+default=2
+[[struct.member]]
+comment="max rate"
+name="maxrate"
+type="float"
+default=250.8
