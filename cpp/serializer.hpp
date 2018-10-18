@@ -83,24 +83,25 @@ public:
     return result;
   }
   // buffer
-  template <class T = char *, typename TS = size_t>
-  void putBuffer(T source_buffer, TS write_size) {
-    auto next_ptr = w_pointer + write_size + sizeof(TS);
+  template <class T = char, typename TS = size_t>
+  void putBuffer(const T *source_buffer, TS write_size) {
+    auto total_size = sizeof(T) * write_size;
+    auto next_ptr = w_pointer + total_size + sizeof(TS);
     if (next_ptr > buffer_size) {
       // buffer over
       throw Exception(true, "[buffer] buffer over!", w_pointer,
-                      write_size + sizeof(TS), buffer_size);
+                      total_size + sizeof(TS), buffer_size);
     }
     auto base_ptr = reinterpret_cast<uint8_t *>(buffer) + w_pointer;
     auto size_ptr = reinterpret_cast<TS *>(base_ptr);
-    auto buff_ptr = reinterpret_cast<T>(size_ptr + 1);
+    auto buff_ptr = reinterpret_cast<T *>(size_ptr + 1);
     std::memcpy(size_ptr, &write_size, sizeof(TS));
-    std::memcpy(buff_ptr, source_buffer, write_size);
+    std::memcpy(buff_ptr, source_buffer, total_size);
     w_pointer = next_ptr;
   }
   //
-  template <class T = char *, typename TS = size_t>
-  std::pair<const T, TS> getBuffer() {
+  template <class T = char, typename TS = size_t>
+  std::pair<const T *, TS> getBuffer() {
     auto next_ptr = r_pointer + sizeof(TS);
     auto max_pointer = get_read_max();
     if (next_ptr > max_pointer) {
@@ -113,13 +114,14 @@ public:
     TS read_size;
     std::memcpy(&read_size, size_ptr, sizeof(TS));
     if (read_size > 0) {
-      next_ptr += read_size;
+      auto total_size = read_size * sizeof(T);
+      next_ptr += total_size;
       if (next_ptr > max_pointer) {
         // buffer over
-        throw Exception(false, "[buffer] buffer over!", r_pointer, read_size,
-                        max_pointer);
+        throw Exception(false, "[buffer] buffer over!", r_pointer + sizeof(TS),
+                        total_size, max_pointer);
       }
-      auto buff_ptr = reinterpret_cast<T>(size_ptr + 1);
+      auto buff_ptr = reinterpret_cast<T *>(size_ptr + 1);
       r_pointer = next_ptr;
       return std::make_pair(buff_ptr, read_size);
     }

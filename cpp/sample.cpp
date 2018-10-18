@@ -37,12 +37,12 @@ int main(int argc, char **argv) {
     using msg_size_t = uint8_t;
     for (auto s : str) {
       auto sz = strlen(s) + 1;
-      ser.putBuffer<char *, msg_size_t>(const_cast<char *>(s), sz);
+      ser.putBuffer<char, msg_size_t>(s, sz);
     }
     std::cout << "put string done: " << ser.getWriteSize() << " bytes"
               << std::endl;
     for (int i = 0; i < str.size(); i++) {
-      auto r = ser.getBuffer<const char *, msg_size_t>();
+      auto r = ser.getBuffer<const char, msg_size_t>();
       std::cout << (int)r.second << ": " << r.first << std::endl;
     }
     std::cout << "get string done: " << ser.getReadSize() << " bytes"
