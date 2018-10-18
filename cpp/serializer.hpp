@@ -100,7 +100,7 @@ public:
   }
   //
   template <class T = char *, typename TS = size_t>
-  std::pair<T, TS> getBuffer() {
+  std::pair<const T, TS> getBuffer() {
     auto next_ptr = r_pointer + sizeof(TS);
     auto max_pointer = get_read_max();
     if (next_ptr > max_pointer) {
