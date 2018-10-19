@@ -1,25 +1,35 @@
 namespace = "Sample"
 local_include = ["test.hpp"]
-include = ["serializer.hpp"]
+include = ["serializer.hpp", "vector"]
 version = 1001 # 1.0.00
 
 struct_name = "Test"
 
 [[member]]
+name = "test_list"
+type = "t"
+size_type = "uint8_t"
+raw_access = true
+
+[[member.member]]
 name = "field"
 type = "struct"
 raw_access = true
 
-[[member]]
+[[member.member]]
 name = "message"
 type = "char"
 size_type = "uint8_t"
 size_method = true
 raw_access = true
 
-[[member]]
+[[member.member]]
 name = "ranking"
 type = "uint16_t"
 size_type = "uint8_t"
 container = true
 raw_access = true
+
+[[member]]
+name = "count"
+type = "uint16_t"

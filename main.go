@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"html/template"
 	"os"
 	"strings"
 
@@ -17,6 +18,7 @@ type MemberInfo struct {
 	SizeType   string
 	Container  bool
 	RawAccess  bool
+	Brank      string
 	Children   []MemberInfo
 }
 
@@ -46,51 +48,94 @@ func (err *myError) Error() string {
 	return err.msg
 }
 
-func (m *MemberInfo) getName() string {
-	if m.RawAccess {
-		return m.Name
+func (m *MemberInfo) getName(parentName string, isRead bool) string {
+	prefix := parentName
+	if prefix != "" {
+		prefix += "."
 	}
-	return "get" + strings.Title(m.Name) + "()"
+	if m.RawAccess {
+		return prefix + m.Name
+	}
+	opName := func() string {
+		if isRead {
+			return "get"
+		}
+		return "put"
+	}()
+	return prefix + opName + strings.Title(m.Name) + "()"
+}
+
+func (m *MemberInfo) getSizeName(parentName string, isRead bool) string {
+	prefix := parentName
+	if prefix != "" {
+		prefix += "."
+	}
+	if m.SizeMethod == false {
+		return "sizeof(" + prefix + m.Name + ")"
+	}
+	opName := func() string {
+		if isRead {
+			return "get"
+		}
+		return "put"
+	}()
+	return prefix + opName + strings.Title(m.Name) + "Size()"
+}
+
+func dumpPutMember(m MemberInfo, parentName string, indent int) {
+	myName := m.getName(parentName, true)
+	if m.Children != nil {
+		fmt.Printf("%sser.put<%s>(%s.size())\n", m.Brank, m.SizeType, myName)
+		fmt.Printf("%sfor (auto& %s : %s) {\n", m.Brank, m.Type, myName)
+		for _, ch := range m.Children {
+			dumpPutMember(ch, m.Type, indent+2)
+		}
+		fmt.Printf("%s}\n", m.Brank)
+	} else if m.Type == "struct" {
+		fmt.Printf("%sser.putStruct(%s);\n", m.Brank, myName)
+	} else if m.Container {
+		fmt.Printf("%sser.putVector<%s>(%s);\n", m.Brank, m.Type, myName)
+	} else if m.SizeType != "" {
+		fmt.Printf("%sser.putBuffer<%s, %s>(%s, %s);\n", m.Brank, m.Type, m.SizeType, myName, m.getSizeName(parentName, true))
+	} else {
+		fmt.Printf("%sser.put<%s>(%s);\n", m.Brank, m.Type, myName)
+	}
 }
 
 // put members
 func memberDump(structInfo StructInfo) error {
 	members := structInfo.Member
+	// size
 	fmt.Printf("//\nsize_t get%sPackSize(const %s& s) {\n", structInfo.Name, structInfo.Name)
 	fmt.Printf("  return 0;\n}\n")
+	// pack
 	fmt.Printf("//\nvoid pack%s(Serializer& ser, %s& s) {\n", structInfo.Name, structInfo.Name)
-	fmt.Printf("  ser.put<uint_t>(get%sPackSize());\n", structInfo.Name)
+	fmt.Printf("  ser.put<uint_t>(get%sPackSize(s));\n", structInfo.Name)
 	fmt.Printf("  ser.put<uint16_t>(%d);\n", structInfo.Version)
-	fmt.Printf("  for (auto &t : s.tlist) {\n")
 	for _, m := range members {
-		if m.Type == "struct" {
-			fmt.Printf("    ser.putStruct(t.%s);\n", m.getName())
-		} else if m.Container {
-			fmt.Printf("    ser.putVector<%s>(t.%s);\n", m.Type, m.getName())
-		} else {
-			fmt.Printf("    ser.putBuffer<%s>(t.%s);\n", m.Type, m.getName())
-		}
+		dumpPutMember(m, "s", 2)
 	}
-	fmt.Printf("  }\n}\n//\n")
+	fmt.Printf("}\n//\n")
+	// unpack
 	fmt.Printf("void unpack%s(Serializer& ser, %s& s) {\n", structInfo.Name, structInfo.Name)
 	fmt.Printf("  auto pack_size = ser.get<uint32_t>();\n")
 	fmt.Printf("  auto version   = ser.get<uint16_t>();\n")
-	fmt.Printf("  for (auto &t : s.tlist) {\n")
 	for _, m := range members {
 		if m.Type == "struct" {
-			fmt.Printf("    ser.getStruct(t.%s);\n", m.getName())
+			fmt.Printf("    ser.getStruct(t.%s);\n", m.getName("", true))
 		} else if m.Container {
-			fmt.Printf("    ser.getVector<%s>(t.%s);\n", m.Type, m.getName())
+			fmt.Printf("    ser.getVector<%s>(t.%s);\n", m.Type, m.getName("", true))
 		} else {
-			fmt.Printf("    ser.getBuffer<%s>(t.%s);\n", m.Type, m.getName())
+			fmt.Printf("    ser.getBuffer<%s>(t.%s);\n", m.Type, m.getName("", true))
 		}
 	}
-	fmt.Printf("  }\n}\n")
+	fmt.Printf("}\n")
+
 	return nil
 }
 
 // parse member
-func memberParse(membersConfig []*toml.Tree) ([]MemberInfo, error) {
+func memberParse(membersConfig []*toml.Tree, brank int) ([]MemberInfo, error) {
 	var membersInfo []MemberInfo
 	for _, m := range membersConfig {
 		name := m.Get("name")
@@ -104,6 +149,7 @@ func memberParse(membersConfig []*toml.Tree) ([]MemberInfo, error) {
 		mInfo := MemberInfo{
 			Name:     name.(string),
 			Type:     typeName.(string),
+			Brank:    strings.Repeat(" ", brank),
 			Children: nil,
 		}
 		sizeType := m.Get("size_type")
@@ -129,6 +175,15 @@ func memberParse(membersConfig []*toml.Tree) ([]MemberInfo, error) {
 			mInfo.RawAccess = false
 		} else {
 			mInfo.RawAccess = rawAccess.(bool)
+		}
+
+		children := m.Get("member")
+		if children != nil {
+			var err error
+			mInfo.Children, err = memberParse(children.([]*toml.Tree), brank+2)
+			if err != nil {
+				return membersInfo, err
+			}
 		}
 		membersInfo = append(membersInfo, mInfo)
 	}
@@ -182,7 +237,7 @@ func parseToml(tomlConfig *toml.Tree) (GlobalInfo, error) {
 	}
 
 	var err error
-	sInfo.Member, err = memberParse(membersConfig.([]*toml.Tree))
+	sInfo.Member, err = memberParse(membersConfig.([]*toml.Tree), 2)
 	wInfo.Struct = sInfo
 
 	return wInfo, err
@@ -232,4 +287,35 @@ func main() {
 	}
 	memberDump(wInfo.Struct)
 	fmt.Printf("} // namespace %s\n", wInfo.NameSpace)
+
+	tmpl, err := template.New("test").Parse(`//
+// this file is auto generated
+// by structbuilder<https://github.com/zsuzuki/structbuilder>
+//
+#pragma once
+
+{{if gt (len .Include) 0}}{{range .Include}}#include {{"<"}}{{.}}>
+{{end -}}
+{{end}}
+{{if gt (len .LocalInclude) 0}}{{range .LocalInclude}}#include "{{.}}"
+{{end -}}
+{{end}}
+{{if .HasNameSpace}}namespace {{.NameSpace}} {
+//
+size_t get{{.Struct.Name}}PackSize(const {{.Struct.Name}}& s) {
+	return 0;
+}
+//
+void pack{{.Struct.Name}}(Serializer& ser,{{.Struct.Name}}& s) {
+}
+//
+void unpack{{.Struct.Name}}(Serializer& ser,{{.Struct.Name}}& s) {
+}
+} // namespace {{.NameSpace}}
+{{end}}
+`)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+	}
+	tmpl.Execute(os.Stdout, wInfo)
 }

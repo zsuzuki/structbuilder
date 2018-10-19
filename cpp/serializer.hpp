@@ -7,6 +7,7 @@
 #include <cstring>
 #include <exception>
 #include <string>
+#include <vector>
 
 //
 class Serializer {
