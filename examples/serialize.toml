@@ -1,0 +1,25 @@
+namespace = "Sample"
+local_include = ["test.hpp"]
+include = ["serializer.hpp"]
+version = 1001 # 1.0.00
+
+struct_name = "Test"
+
+[[member]]
+name = "field"
+type = "struct"
+raw_access = true
+
+[[member]]
+name = "message"
+type = "char"
+size_type = "uint8_t"
+size_method = true
+raw_access = true
+
+[[member]]
+name = "ranking"
+type = "uint16_t"
+size_type = "uint8_t"
+container = true
+raw_access = true

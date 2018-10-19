@@ -4,59 +4,26 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/pelletier/go-toml"
 )
 
-const (
-	intSize     = 4
-	pointerSize = 8
-)
-
-var (
-	sizeMap = map[string]int64{
-		"int":                intSize,
-		"unsigned int":       intSize,
-		"size_t":             pointerSize,
-		"char":               1,
-		"unsigned char":      1,
-		"short":              2,
-		"unsigned short":     2,
-		"long":               intSize,
-		"unsigned long":      intSize,
-		"long long":          8,
-		"unsigned long long": 8,
-		"float":              4,
-		"double":             8,
-		"int8_t":             1,
-		"uint8_t":            1,
-		"int16_t":            2,
-		"uint16_t":           2,
-		"int32_t":            4,
-		"uint32_t":           4,
-		"int64_t":            8,
-		"uint64_t":           8,
-	}
-)
-
 // MemberInfo struct member's information
 type MemberInfo struct {
-	Name    string
-	Type    string
-	Array   int64
-	Default string
-	Bits    int64
-	Comment string
-	Offset  int64
-	Size    int64
+	Name       string
+	Type       string
+	SizeMethod bool
+	SizeType   string
+	Container  bool
+	RawAccess  bool
+	Children   []MemberInfo
 }
 
 // StructInfo single struct information
 type StructInfo struct {
 	Name    string
-	MaxSize int64
+	Version int64
 	Member  []MemberInfo
 }
 
@@ -79,108 +46,91 @@ func (err *myError) Error() string {
 	return err.msg
 }
 
-//
-func getString(c *toml.Tree, n string) string {
-	r := c.Get(n)
-	if r == nil {
-		return ""
+func (m *MemberInfo) getName() string {
+	if m.RawAccess {
+		return m.Name
 	}
-	return r.(string)
-}
-func getInt(c *toml.Tree, n string, d int64) int64 {
-	r := c.Get(n)
-	if r == nil {
-		return d
-	}
-	return r.(int64)
-
-}
-func getFloat(c *toml.Tree, n string, d float64) float64 {
-	r := c.Get(n)
-	if r == nil {
-		return d
-	}
-	return r.(float64)
+	return "get" + strings.Title(m.Name) + "()"
 }
 
-//
-func checkFloatType(typeString string) bool {
-	switch typeString {
-	case "float", "double":
-		return true
-	}
-	return false
-}
-
-//
-func checkStringType(typeString string, arraySize int64) bool {
-	switch typeString {
-	case "std::string":
-		return true
-	case "char", "unsigned char":
-		if arraySize > 1 {
-			return true
+// put members
+func memberDump(structInfo StructInfo) error {
+	members := structInfo.Member
+	fmt.Printf("//\nsize_t get%sPackSize(const %s& s) {\n", structInfo.Name, structInfo.Name)
+	fmt.Printf("  return 0;\n}\n")
+	fmt.Printf("//\nvoid pack%s(Serializer& ser, %s& s) {\n", structInfo.Name, structInfo.Name)
+	fmt.Printf("  ser.put<uint_t>(get%sPackSize());\n", structInfo.Name)
+	fmt.Printf("  ser.put<uint16_t>(%d);\n", structInfo.Version)
+	fmt.Printf("  for (auto &t : s.tlist) {\n")
+	for _, m := range members {
+		if m.Type == "struct" {
+			fmt.Printf("    ser.putStruct(t.%s);\n", m.getName())
+		} else if m.Container {
+			fmt.Printf("    ser.putVector<%s>(t.%s);\n", m.Type, m.getName())
+		} else {
+			fmt.Printf("    ser.putBuffer<%s>(t.%s);\n", m.Type, m.getName())
 		}
 	}
-	if strings.Index(typeString, "char*") >= 0 {
-		return true
+	fmt.Printf("  }\n}\n//\n")
+	fmt.Printf("void unpack%s(Serializer& ser, %s& s) {\n", structInfo.Name, structInfo.Name)
+	fmt.Printf("  auto pack_size = ser.get<uint32_t>();\n")
+	fmt.Printf("  auto version   = ser.get<uint16_t>();\n")
+	fmt.Printf("  for (auto &t : s.tlist) {\n")
+	for _, m := range members {
+		if m.Type == "struct" {
+			fmt.Printf("    ser.getStruct(t.%s);\n", m.getName())
+		} else if m.Container {
+			fmt.Printf("    ser.getVector<%s>(t.%s);\n", m.Type, m.getName())
+		} else {
+			fmt.Printf("    ser.getBuffer<%s>(t.%s);\n", m.Type, m.getName())
+		}
 	}
-	if strings.Index(typeString, "char *") >= 0 {
-		return true
-	}
-	return false
+	fmt.Printf("  }\n}\n")
+	return nil
 }
 
 // parse member
-func memberParse(tomlConfig *toml.Tree) ([]MemberInfo, error) {
+func memberParse(membersConfig []*toml.Tree) ([]MemberInfo, error) {
 	var membersInfo []MemberInfo
-	var offset int64
-	offset = 0
-	membersConfig := tomlConfig.Get("member")
-	if membersConfig != nil {
-		membersConfigList := membersConfig.([]*toml.Tree)
-		for _, member := range membersConfigList {
-			mName := member.Get("name")
-			if mName == nil {
-				return membersInfo, &myError{"not defined member name"}
-			}
-			mType := member.Get("type")
-			if mType == nil {
-				return membersInfo, &myError{"not defined member class-type"}
-			}
-			m := MemberInfo{
-				Name:    mName.(string),
-				Type:    mType.(string),
-				Bits:    getInt(member, "bits", 0),
-				Array:   getInt(member, "array", 1),
-				Comment: getString(member, "comment"),
-			}
-			baseSize, foundType := sizeMap[m.Type]
-			if foundType == false {
-				if strings.Index(m.Type, "*") >= 0 {
-					baseSize = pointerSize
-				} else {
-					baseSize = intSize
-				}
-			}
-			alignSize := baseSize - (offset % baseSize)
-			if baseSize != alignSize {
-				m.Offset = offset + alignSize
-			} else {
-				m.Offset = offset
-			}
-			m.Size = baseSize * m.Array
-			offset = m.Offset + m.Size
-			if checkStringType(m.Type, m.Array) {
-				m.Default = getString(member, "default")
-			} else if checkFloatType(m.Type) {
-				m.Default = strconv.FormatFloat(getFloat(member, "default", 0), 'e', -1, 64)
-			} else {
-				m.Default = strconv.Itoa(int(getInt(member, "default", 0)))
-			}
-			membersInfo = append(membersInfo, m)
-			fmt.Println("    ", mType, mName, "; //", m.Offset, ":", m.Size, "=", m.Default)
+	for _, m := range membersConfig {
+		name := m.Get("name")
+		if name == nil {
+			return membersInfo, &myError{"not defined member name"}
 		}
+		typeName := m.Get("type")
+		if typeName == nil {
+			return membersInfo, &myError{"not defined member type"}
+		}
+		mInfo := MemberInfo{
+			Name:     name.(string),
+			Type:     typeName.(string),
+			Children: nil,
+		}
+		sizeType := m.Get("size_type")
+		if sizeType == nil {
+			mInfo.SizeType = ""
+		} else {
+			mInfo.SizeType = sizeType.(string)
+		}
+		sizeMethod := m.Get("size_method")
+		if sizeMethod == nil {
+			mInfo.SizeMethod = false
+		} else {
+			mInfo.SizeMethod = sizeMethod.(bool)
+		}
+		container := m.Get("container")
+		if container == nil {
+			mInfo.Container = false
+		} else {
+			mInfo.Container = container.(bool)
+		}
+		rawAccess := m.Get("raw_access")
+		if rawAccess == nil {
+			mInfo.RawAccess = false
+		} else {
+			mInfo.RawAccess = rawAccess.(bool)
+		}
+		membersInfo = append(membersInfo, mInfo)
 	}
 	return membersInfo, nil
 }
@@ -190,7 +140,7 @@ func parseToml(tomlConfig *toml.Tree) (GlobalInfo, error) {
 	var wInfo GlobalInfo
 	wInfo.Include = []string{}
 	wInfo.LocalInclude = []string{}
-	wInfo.NameSpace = getString(tomlConfig, "namespace")
+	wInfo.NameSpace = tomlConfig.Get("namespace").(string)
 	if wInfo.NameSpace == "" {
 		wInfo.HasNameSpace = false
 	} else {
@@ -213,21 +163,26 @@ func parseToml(tomlConfig *toml.Tree) (GlobalInfo, error) {
 	}
 
 	// setup struct
-	var sInfo StructInfo
-	structConfig := tomlConfig.Get("struct").(*toml.Tree)
-	sn := structConfig.Get("name")
+	sn := tomlConfig.Get("struct_name")
 	if sn == nil {
 		return wInfo, &myError{msg: "not defined struct name"}
 	}
-	sInfo.Name = sn.(string)
-	ms := structConfig.Get("maxsize")
-	if ms != nil {
-		sInfo.MaxSize = ms.(int64)
-	} else {
-		sInfo.MaxSize = 0
+	membersConfig := tomlConfig.Get("member")
+	if membersConfig == nil {
+		return wInfo, &myError{msg: "not have members"}
 	}
+
+	var sInfo StructInfo
+	sInfo.Name = sn.(string)
+	ver := tomlConfig.Get("version")
+	if ver != nil {
+		sInfo.Version = ver.(int64)
+	} else {
+		sInfo.Version = 100
+	}
+
 	var err error
-	sInfo.Member, err = memberParse(structConfig)
+	sInfo.Member, err = memberParse(membersConfig.([]*toml.Tree))
 	wInfo.Struct = sInfo
 
 	return wInfo, err
@@ -260,8 +215,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	if wInfo.HasNameSpace {
-		fmt.Println("namespace:", wInfo.NameSpace)
+	fmt.Printf("#pragma once\n\n")
+	if len(wInfo.LocalInclude) > 0 {
+		for _, inc := range wInfo.LocalInclude {
+			fmt.Printf("#include \"%s\"\n", inc)
+		}
+		fmt.Printf("\n")
 	}
-	fmt.Printf("struct %s\n", wInfo.Struct.Name)
+	for _, inc := range wInfo.Include {
+		fmt.Printf("#include <%s>\n", inc)
+	}
+	fmt.Printf("\n")
+
+	if wInfo.HasNameSpace {
+		fmt.Printf("namespace %s {\n", wInfo.NameSpace)
+	}
+	memberDump(wInfo.Struct)
+	fmt.Printf("} // namespace %s\n", wInfo.NameSpace)
 }
