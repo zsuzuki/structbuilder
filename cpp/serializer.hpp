@@ -127,4 +127,57 @@ public:
     }
     return std::make_pair(nullptr, 0);
   }
+  // struct
+  template <class T> void putStruct(const T &s) {
+    uint16_t ssize = sizeof(T);
+    auto next_ptr = w_pointer + ssize + sizeof(uint16_t);
+    if (next_ptr > buffer_size) {
+      // buffer over
+      throw Exception(true, "[struct] buffer over!", w_pointer,
+                      ssize + sizeof(uint16_t), buffer_size);
+    }
+    auto base_ptr = reinterpret_cast<uint8_t *>(buffer) + w_pointer;
+    auto size_ptr = reinterpret_cast<uint16_t *>(base_ptr);
+    auto buff_ptr = reinterpret_cast<T *>(size_ptr + 1);
+    std::memcpy(size_ptr, &ssize, sizeof(uint16_t));
+    std::memcpy(buff_ptr, &s, ssize);
+    w_pointer = next_ptr;
+  }
+  //
+  template <class T> void getStruct(T &result) {
+    auto next_ptr = r_pointer + sizeof(uint16_t);
+    auto max_pointer = get_read_max();
+    if (next_ptr > max_pointer) {
+      // buffer over
+      throw Exception(false, "[struct] buffer over!", r_pointer,
+                      sizeof(uint16_t), max_pointer);
+    }
+    auto base_ptr = reinterpret_cast<uint8_t *>(buffer) + r_pointer;
+    auto size_ptr = reinterpret_cast<uint16_t *>(base_ptr);
+    uint16_t struct_size;
+    std::memcpy(&struct_size, size_ptr, sizeof(uint16_t));
+    if (struct_size > 0) {
+      next_ptr += struct_size;
+      if (next_ptr > max_pointer) {
+        // buffer over
+        throw Exception(false, "[struct] buffer over!",
+                        r_pointer + sizeof(uint16_t), struct_size, max_pointer);
+      }
+      if (struct_size > sizeof(T))
+        struct_size = sizeof(T);
+      memcpy(&result, reinterpret_cast<T *>(size_ptr + 1), struct_size);
+      r_pointer = next_ptr;
+    }
+  }
+  // vector
+  template <class T, typename TS = size_t>
+  void putVector(const std::vector<T> &v) {
+    putBuffer<T, TS>(v.data(), v.size());
+  }
+  //
+  template <class T, typename TS = size_t> void getVector(std::vector<T> &v) {
+    auto r = getBuffer<T, TS>();
+    v.resize(r.second);
+    memcpy(v.data(), r.first, sizeof(T) * r.second);
+  }
 };
