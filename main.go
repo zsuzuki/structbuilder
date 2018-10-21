@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"html/template"
 	"os"
 	"strings"
+	"text/template"
 
 	"github.com/pelletier/go-toml"
 )
@@ -18,15 +18,22 @@ type MemberInfo struct {
 	SizeType   string
 	Container  bool
 	RawAccess  bool
-	Brank      string
 	Children   []MemberInfo
+	// for output
+	DispName     string
+	Brank        string
+	SetterName   string
+	GetterName   string
+	SizeName     string
+	BracketClose bool
 }
 
 // StructInfo single struct information
 type StructInfo struct {
-	Name    string
-	Version int64
-	Member  []MemberInfo
+	Name        string
+	Version     int64
+	Member      []MemberInfo
+	DispMembers []MemberInfo
 }
 
 // GlobalInfo global context for header
@@ -82,14 +89,24 @@ func (m *MemberInfo) getSizeName(parentName string, isRead bool) string {
 	return prefix + opName + strings.Title(m.Name) + "Size()"
 }
 
-func dumpPutMember(m MemberInfo, parentName string, indent int) {
+func dumpPutMember(m MemberInfo, parentName string, indent int) []MemberInfo {
+	dispMembers := []MemberInfo{}
 	myName := m.getName(parentName, true)
+	mInfo := m
+	mInfo.DispName = myName
+	mInfo.SizeName = m.getSizeName(parentName, true)
+	dispMembers = append(dispMembers, mInfo)
+
 	if m.Children != nil {
 		fmt.Printf("%sser.put<%s>(%s.size())\n", m.Brank, m.SizeType, myName)
 		fmt.Printf("%sfor (auto& %s : %s) {\n", m.Brank, m.Type, myName)
 		for _, ch := range m.Children {
-			dumpPutMember(ch, m.Type, indent+2)
+			ml := dumpPutMember(ch, m.Type, indent+2)
+			dispMembers = append(dispMembers, ml...)
 		}
+		var bClose MemberInfo
+		bClose.BracketClose = true
+		dispMembers = append(dispMembers, bClose)
 		fmt.Printf("%s}\n", m.Brank)
 	} else if m.Type == "struct" {
 		fmt.Printf("%sser.putStruct(%s);\n", m.Brank, myName)
@@ -100,38 +117,19 @@ func dumpPutMember(m MemberInfo, parentName string, indent int) {
 	} else {
 		fmt.Printf("%sser.put<%s>(%s);\n", m.Brank, m.Type, myName)
 	}
+
+	return dispMembers
 }
 
 // put members
-func memberDump(structInfo StructInfo) error {
+func memberDump(structInfo StructInfo) ([]MemberInfo, error) {
 	members := structInfo.Member
-	// size
-	fmt.Printf("//\nsize_t get%sPackSize(const %s& s) {\n", structInfo.Name, structInfo.Name)
-	fmt.Printf("  return 0;\n}\n")
-	// pack
-	fmt.Printf("//\nvoid pack%s(Serializer& ser, %s& s) {\n", structInfo.Name, structInfo.Name)
-	fmt.Printf("  ser.put<uint_t>(get%sPackSize(s));\n", structInfo.Name)
-	fmt.Printf("  ser.put<uint16_t>(%d);\n", structInfo.Version)
+	dispMembers := []MemberInfo{}
 	for _, m := range members {
-		dumpPutMember(m, "s", 2)
+		rm := dumpPutMember(m, "s", 2)
+		dispMembers = append(dispMembers, rm...)
 	}
-	fmt.Printf("}\n//\n")
-	// unpack
-	fmt.Printf("void unpack%s(Serializer& ser, %s& s) {\n", structInfo.Name, structInfo.Name)
-	fmt.Printf("  auto pack_size = ser.get<uint32_t>();\n")
-	fmt.Printf("  auto version   = ser.get<uint16_t>();\n")
-	for _, m := range members {
-		if m.Type == "struct" {
-			fmt.Printf("    ser.getStruct(t.%s);\n", m.getName("", true))
-		} else if m.Container {
-			fmt.Printf("    ser.getVector<%s>(t.%s);\n", m.Type, m.getName("", true))
-		} else {
-			fmt.Printf("    ser.getBuffer<%s>(t.%s);\n", m.Type, m.getName("", true))
-		}
-	}
-	fmt.Printf("}\n")
-
-	return nil
+	return dispMembers, nil
 }
 
 // parse member
@@ -238,6 +236,10 @@ func parseToml(tomlConfig *toml.Tree) (GlobalInfo, error) {
 
 	var err error
 	sInfo.Member, err = memberParse(membersConfig.([]*toml.Tree), 2)
+	if err == nil {
+		sInfo.DispMembers, err = memberDump(sInfo)
+		fmt.Printf("sizeof : %d\n", len(sInfo.DispMembers))
+	}
 	wInfo.Struct = sInfo
 
 	return wInfo, err
@@ -269,51 +271,7 @@ func main() {
 		fmt.Println(ok.Error())
 		os.Exit(1)
 	}
-
-	fmt.Printf("#pragma once\n\n")
-	if len(wInfo.LocalInclude) > 0 {
-		for _, inc := range wInfo.LocalInclude {
-			fmt.Printf("#include \"%s\"\n", inc)
-		}
-		fmt.Printf("\n")
-	}
-	for _, inc := range wInfo.Include {
-		fmt.Printf("#include <%s>\n", inc)
-	}
-	fmt.Printf("\n")
-
-	if wInfo.HasNameSpace {
-		fmt.Printf("namespace %s {\n", wInfo.NameSpace)
-	}
-	memberDump(wInfo.Struct)
-	fmt.Printf("} // namespace %s\n", wInfo.NameSpace)
-
-	tmpl, err := template.New("test").Parse(`//
-// this file is auto generated
-// by structbuilder<https://github.com/zsuzuki/structbuilder>
-//
-#pragma once
-
-{{if gt (len .Include) 0}}{{range .Include}}#include {{"<"}}{{.}}>
-{{end -}}
-{{end}}
-{{if gt (len .LocalInclude) 0}}{{range .LocalInclude}}#include "{{.}}"
-{{end -}}
-{{end}}
-{{if .HasNameSpace}}namespace {{.NameSpace}} {
-//
-size_t get{{.Struct.Name}}PackSize(const {{.Struct.Name}}& s) {
-	return 0;
-}
-//
-void pack{{.Struct.Name}}(Serializer& ser,{{.Struct.Name}}& s) {
-}
-//
-void unpack{{.Struct.Name}}(Serializer& ser,{{.Struct.Name}}& s) {
-}
-} // namespace {{.NameSpace}}
-{{end}}
-`)
+	tmpl, err := template.ParseFiles("output.tpl")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 	}
