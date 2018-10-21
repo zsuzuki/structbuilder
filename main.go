@@ -10,6 +10,10 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
+var (
+	indentStep int
+)
+
 // MemberInfo struct member's information
 type MemberInfo struct {
 	Name       string
@@ -32,6 +36,7 @@ type MemberInfo struct {
 type StructInfo struct {
 	Name        string
 	Version     int64
+	Brank       string
 	Member      []MemberInfo
 	DispMembers []MemberInfo
 }
@@ -89,7 +94,7 @@ func (m *MemberInfo) getSizeName(parentName string, isRead bool) string {
 	return prefix + opName + strings.Title(m.Name) + "Size()"
 }
 
-func dumpPutMember(m MemberInfo, parentName string, indent int) []MemberInfo {
+func dumpPutMember(m MemberInfo, parentName string) []MemberInfo {
 	dispMembers := []MemberInfo{}
 	myName := m.getName(parentName, true)
 	mInfo := m
@@ -98,24 +103,14 @@ func dumpPutMember(m MemberInfo, parentName string, indent int) []MemberInfo {
 	dispMembers = append(dispMembers, mInfo)
 
 	if m.Children != nil {
-		fmt.Printf("%sser.put<%s>(%s.size())\n", m.Brank, m.SizeType, myName)
-		fmt.Printf("%sfor (auto& %s : %s) {\n", m.Brank, m.Type, myName)
 		for _, ch := range m.Children {
-			ml := dumpPutMember(ch, m.Type, indent+2)
+			ml := dumpPutMember(ch, m.Type)
 			dispMembers = append(dispMembers, ml...)
 		}
 		var bClose MemberInfo
 		bClose.BracketClose = true
+		bClose.Brank = m.Brank
 		dispMembers = append(dispMembers, bClose)
-		fmt.Printf("%s}\n", m.Brank)
-	} else if m.Type == "struct" {
-		fmt.Printf("%sser.putStruct(%s);\n", m.Brank, myName)
-	} else if m.Container {
-		fmt.Printf("%sser.putVector<%s>(%s);\n", m.Brank, m.Type, myName)
-	} else if m.SizeType != "" {
-		fmt.Printf("%sser.putBuffer<%s, %s>(%s, %s);\n", m.Brank, m.Type, m.SizeType, myName, m.getSizeName(parentName, true))
-	} else {
-		fmt.Printf("%sser.put<%s>(%s);\n", m.Brank, m.Type, myName)
 	}
 
 	return dispMembers
@@ -126,7 +121,7 @@ func memberDump(structInfo StructInfo) ([]MemberInfo, error) {
 	members := structInfo.Member
 	dispMembers := []MemberInfo{}
 	for _, m := range members {
-		rm := dumpPutMember(m, "s", 2)
+		rm := dumpPutMember(m, "s")
 		dispMembers = append(dispMembers, rm...)
 	}
 	return dispMembers, nil
@@ -178,7 +173,7 @@ func memberParse(membersConfig []*toml.Tree, brank int) ([]MemberInfo, error) {
 		children := m.Get("member")
 		if children != nil {
 			var err error
-			mInfo.Children, err = memberParse(children.([]*toml.Tree), brank+2)
+			mInfo.Children, err = memberParse(children.([]*toml.Tree), brank+indentStep)
 			if err != nil {
 				return membersInfo, err
 			}
@@ -235,10 +230,9 @@ func parseToml(tomlConfig *toml.Tree) (GlobalInfo, error) {
 	}
 
 	var err error
-	sInfo.Member, err = memberParse(membersConfig.([]*toml.Tree), 2)
+	sInfo.Member, err = memberParse(membersConfig.([]*toml.Tree), indentStep)
 	if err == nil {
 		sInfo.DispMembers, err = memberDump(sInfo)
-		fmt.Printf("sizeof : %d\n", len(sInfo.DispMembers))
 	}
 	wInfo.Struct = sInfo
 
@@ -251,6 +245,7 @@ func parseToml(tomlConfig *toml.Tree) (GlobalInfo, error) {
 func main() {
 	headerFile := flag.String("header", "", "output header filename")
 	cppFile := flag.String("cpp", "", "output c++ source filename")
+	flag.IntVar(&indentStep, "indent", 4, "indent step")
 	flag.Parse()
 	fmt.Printf("output: %s %s\n", *headerFile, *cppFile)
 

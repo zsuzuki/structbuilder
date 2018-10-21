@@ -17,13 +17,13 @@ size_t get{{.Struct.Name}}PackSize(const {{.Struct.Name}}& s) {
 }
 //
 void pack{{.Struct.Name}}(Serializer& ser, {{.Struct.Name}}& s) {
-{{range .Struct.DispMembers}}{{.Brank}}{{if .BracketClose}}  {{.Brank}}}
-{{else if len .Children}}put<uint16_t>({{.DispName}}.size());
+{{range .Struct.DispMembers}}{{.Brank}}{{if .BracketClose}}}
+{{else if len .Children}}ser.put<{{.SizeType}}>({{.DispName}}.size());
 {{.Brank}}for (auto& {{.Type}} : {{.DispName}}) {
-{{else if eq .Type "struct"}}putStruct({{.DispName}});
-{{else if .Container}}putVector<{{.Type}}>({{.DispName}});
-{{else if lt (len .Type) 0}}putBuffer<{{.Type}}, {{.SizeType}}>({{.DispName}}, {{.SizeName}});
-{{else}}put<{{.Type}}>({{.DispName}});
+{{else if eq .Type "struct"}}ser.putStruct({{.DispName}});
+{{else if .Container}}ser.putVector<{{.Type}}>({{.DispName}});
+{{else if len .SizeType}}ser.putBuffer<{{.Type}}, {{.SizeType}}>({{.DispName}}, {{.SizeName}});
+{{else}}ser.put<{{.Type}}>({{.DispName}});
 {{end -}}
 {{end -}}
 }
