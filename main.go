@@ -250,25 +250,35 @@ func main() {
 	fmt.Printf("output: %s %s\n", *headerFile, *cppFile)
 
 	// file input
-	if len(os.Args) < 2 {
-		fmt.Println("no input toml file.")
+	fArgs := flag.Args()
+	if len(fArgs) < 1 {
+		fmt.Fprintln(os.Stderr, "no input toml file.")
 		os.Exit(1)
 	}
-	intpuFile := os.Args[1]
+	intpuFile := fArgs[0]
 	tomlConfig, ok := toml.LoadFile(intpuFile)
 	if ok != nil {
-		fmt.Println("TOML read error:", intpuFile)
+		fmt.Fprintln(os.Stderr, "TOML read error:", intpuFile)
 		os.Exit(1)
 	}
 
 	wInfo, ok := parseToml(tomlConfig)
 	if ok != nil {
-		fmt.Println(ok.Error())
+		fmt.Fprintln(os.Stderr, ok.Error())
 		os.Exit(1)
 	}
 	tmpl, err := template.ParseFiles("output.tpl")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 	}
-	tmpl.Execute(os.Stdout, wInfo)
+	var oFile *os.File
+	if len(*cppFile) > 0 {
+		oFile, err = os.Create(*cppFile)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+		}
+	} else {
+		oFile = os.Stdout
+	}
+	tmpl.Execute(oFile, wInfo)
 }
