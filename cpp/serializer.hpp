@@ -22,6 +22,12 @@ private:
                "%s%s: pointer=%zu, data size=%zu buffer size=%zu",
                wr ? "[write]" : "[read]", msg.c_str(), p, ds, s);
     }
+    Exception(std::string msg, uint16_t need, uint16_t v) {
+      snprintf(error_message, sizeof(error_message),
+               "[unsupport version] module<%s>: A version greater than %d is "
+               "required. However, the data version is %d.",
+               msg.c_str(), need, v);
+    }
     ~Exception() override = default;
     const char *what() const noexcept override { return error_message; }
   };
@@ -165,5 +171,15 @@ public:
     auto r = getBuffer<T, TS>();
     v.resize(r.second);
     std::memcpy(v.data(), r.first, sizeof(T) * r.second);
+  }
+
+  // version
+  void putVersion(uint16_t v) { put(v); }
+  uint16_t getVersion(const char *mod, uint16_t need) {
+    auto v = get<uint16_t>();
+    if (v <= need) {
+      throw Exception(mod, need, v);
+    }
+    return v;
   }
 };

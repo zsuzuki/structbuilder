@@ -16,15 +16,16 @@ var (
 
 // MemberInfo struct member's information
 type MemberInfo struct {
-	Name       string
-	Type       string
-	SizeMethod bool
-	SizeType   string
-	Container  bool
-	RawAccess  bool
-	Children   []MemberInfo
+	Name      string
+	Type      string
+	VarName   string
+	SizeType  string
+	Container bool
+	RawAccess bool
+	Children  []MemberInfo
 	// for output
 	DispName     string
+	DispNameSet  string
 	Brank        string
 	SetterName   string
 	GetterName   string
@@ -36,6 +37,7 @@ type MemberInfo struct {
 type StructInfo struct {
 	Name        string
 	Version     int64
+	Unsupport   int64
 	Brank       string
 	Member      []MemberInfo
 	DispMembers []MemberInfo
@@ -60,6 +62,15 @@ func (err *myError) Error() string {
 	return err.msg
 }
 
+func capitalize(str string, prefix string) string {
+	nl := strings.Split(str, "_")
+	newStr := prefix
+	for _, n := range nl {
+		newStr += strings.Title(n)
+	}
+	return newStr
+}
+
 func (m *MemberInfo) getName(parentName string, isRead bool) string {
 	prefix := parentName
 	if prefix != "" {
@@ -72,9 +83,16 @@ func (m *MemberInfo) getName(parentName string, isRead bool) string {
 		if isRead {
 			return "get"
 		}
-		return "put"
+		return "set"
 	}()
-	return prefix + opName + strings.Title(m.Name) + "()"
+
+	return capitalize(m.Name, prefix+opName) + func() string {
+		if isRead {
+			return "()"
+
+		}
+		return ""
+	}()
 }
 
 func (m *MemberInfo) getSizeName(parentName string, isRead bool) string {
@@ -82,16 +100,16 @@ func (m *MemberInfo) getSizeName(parentName string, isRead bool) string {
 	if prefix != "" {
 		prefix += "."
 	}
-	if m.SizeMethod == false {
+	if m.RawAccess {
 		return "sizeof(" + prefix + m.Name + ")"
 	}
 	opName := func() string {
 		if isRead {
 			return "get"
 		}
-		return "put"
+		return "set"
 	}()
-	return prefix + opName + strings.Title(m.Name) + "Size()"
+	return capitalize(m.Name, prefix+opName) + "Size()"
 }
 
 func dumpPutMember(m MemberInfo, parentName string) []MemberInfo {
@@ -99,6 +117,7 @@ func dumpPutMember(m MemberInfo, parentName string) []MemberInfo {
 	myName := m.getName(parentName, true)
 	mInfo := m
 	mInfo.DispName = myName
+	mInfo.DispNameSet = m.getName(parentName, false)
 	mInfo.SizeName = m.getSizeName(parentName, true)
 	dispMembers = append(dispMembers, mInfo)
 
@@ -137,7 +156,10 @@ func memberParse(membersConfig []*toml.Tree, brank int) ([]MemberInfo, error) {
 		}
 		typeName := m.Get("type")
 		if typeName == nil {
-			return membersInfo, &myError{"not defined member type"}
+			typeName = m.Get("var_name")
+			if typeName == nil {
+				return membersInfo, &myError{"not defined member type"}
+			}
 		}
 		mInfo := MemberInfo{
 			Name:     name.(string),
@@ -150,12 +172,6 @@ func memberParse(membersConfig []*toml.Tree, brank int) ([]MemberInfo, error) {
 			mInfo.SizeType = ""
 		} else {
 			mInfo.SizeType = sizeType.(string)
-		}
-		sizeMethod := m.Get("size_method")
-		if sizeMethod == nil {
-			mInfo.SizeMethod = false
-		} else {
-			mInfo.SizeMethod = sizeMethod.(bool)
 		}
 		container := m.Get("container")
 		if container == nil {
@@ -170,7 +186,7 @@ func memberParse(membersConfig []*toml.Tree, brank int) ([]MemberInfo, error) {
 			mInfo.RawAccess = rawAccess.(bool)
 		}
 
-		children := m.Get("member")
+		children := m.Get("child")
 		if children != nil {
 			var err error
 			mInfo.Children, err = memberParse(children.([]*toml.Tree), brank+indentStep)
@@ -220,13 +236,21 @@ func parseToml(tomlConfig *toml.Tree) (GlobalInfo, error) {
 		return wInfo, &myError{msg: "not have members"}
 	}
 
-	var sInfo StructInfo
-	sInfo.Name = sn.(string)
+	sInfo := StructInfo{
+		Name:  sn.(string),
+		Brank: strings.Repeat(" ", indentStep),
+	}
 	ver := tomlConfig.Get("version")
 	if ver != nil {
 		sInfo.Version = ver.(int64)
 	} else {
 		sInfo.Version = 100
+	}
+	unsup := tomlConfig.Get("unsupport")
+	if unsup != nil {
+		sInfo.Unsupport = unsup.(int64)
+	} else {
+		sInfo.Unsupport = 0
 	}
 
 	var err error
@@ -243,11 +267,11 @@ func parseToml(tomlConfig *toml.Tree) (GlobalInfo, error) {
 // application
 //
 func main() {
-	headerFile := flag.String("header", "", "output header filename")
 	cppFile := flag.String("cpp", "", "output c++ source filename")
+	hppFile := flag.String("hpp", "", "output c++ header filename")
 	flag.IntVar(&indentStep, "indent", 4, "indent step")
 	flag.Parse()
-	fmt.Printf("output: %s %s\n", *headerFile, *cppFile)
+	fmt.Printf("output: %s %s\n", *hppFile, *cppFile)
 
 	// file input
 	fArgs := flag.Args()
@@ -267,7 +291,24 @@ func main() {
 		fmt.Fprintln(os.Stderr, ok.Error())
 		os.Exit(1)
 	}
-	tmpl, err := template.ParseFiles("output.tpl")
+	// output - c++ header
+	hpptmpl, err := template.ParseFiles("output_hpp.tpl")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+	}
+	var hFile *os.File
+	if len(*hppFile) > 0 {
+		hFile, err = os.Create(*hppFile)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+		}
+	} else {
+		hFile = os.Stdout
+	}
+	hpptmpl.Execute(hFile, wInfo)
+
+	// output - c++ source
+	cpptmpl, err := template.ParseFiles("output_cpp.tpl")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 	}
@@ -280,5 +321,5 @@ func main() {
 	} else {
 		oFile = os.Stdout
 	}
-	tmpl.Execute(oFile, wInfo)
+	cpptmpl.Execute(oFile, wInfo)
 }
