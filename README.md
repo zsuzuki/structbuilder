@@ -9,33 +9,43 @@ https://github.com/pelletier/go-toml
 # usage
 
 ```shell
-$ structbuilder app.toml
+$ structbuilder [-cpp output-c++source] [-hpp output-c++header] .toml-file
 ```
 
-# toml format
+# toml format<serializer>
+
+serialize [test.hpp](cpp/test.hpp) 
 
 ```toml
-namspace = "myapp"
-include = ["cstdint","myapp.h"]
-local_include = ["local.h"]
+namespace = "Sample"
+local_include = ["test.hpp", "serializer.hpp"]
+# include = ["serializer.hpp"]
+version = 1001 # m.n.oo
+unsupport = 999 # 0.9.99
 
-[struct]
-name="parameter"
-maxsize=32
+struct_name = "Test"
 
-[[struct.member]]
-name = "state"
-type = "uint8_t"
-comment = "current working status"
-default = 0
-[[struct.member]]
-name = "progress"
-type = "float"
-default = 0.0
-[[struct.member]]
-name = "country"
+[[member]]
+name = "child_list"
+var_name = "t"
+size_type = "uint8_t"
+raw_access = true
+
+[[member.child]]
+name = "field"
+type = "struct"
+raw_access = true
+
+[[member.child]]
+name = "message"
 type = "char"
-array = 32
-default = "japan"
-comment = "work in country"
+size_type = "uint8_t"
+#raw_access = true
+
+[[member.child]]
+name = "ranking"
+type = "uint16_t"
+size_type = "uint8_t"
+container = true
+raw_access = true
 ```
