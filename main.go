@@ -4,12 +4,32 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"text/template"
 
 	"./serialize"
 
 	"github.com/pelletier/go-toml"
 )
+
+// output file by template(default is Stdout)
+func outputTemplateFile(data interface{}, name string, tempname string) error {
+	tmpl, err := template.ParseFiles(filepath.Join("templates", tempname))
+	if err != nil {
+		return err
+	}
+	var oFile *os.File
+	if len(name) > 0 {
+		oFile, err = os.Create(name)
+		if err != nil {
+			return err
+		}
+	} else {
+		oFile = os.Stdout
+	}
+	tmpl.Execute(oFile, data)
+	return nil
+}
 
 //
 // application
@@ -36,43 +56,21 @@ func main() {
 	}
 
 	if *ser {
-		//
+		// serializer
 		serialize.SetIndent(*indentStep)
 		wInfo, ok := serialize.ParseToml(tomlConfig)
 		if ok != nil {
 			fmt.Fprintln(os.Stderr, ok.Error())
 			os.Exit(1)
 		}
-		// output - c++ header
-		hpptmpl, err := template.ParseFiles("templates/serialize_hpp.tpl")
+		// output - c++ serialize file
+		err := outputTemplateFile(wInfo, *hppFile, "serialize_hpp.tpl")
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
+			fmt.Println(err.Error())
 		}
-		var hFile *os.File
-		if len(*hppFile) > 0 {
-			hFile, err = os.Create(*hppFile)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-			}
-		} else {
-			hFile = os.Stdout
-		}
-		hpptmpl.Execute(hFile, wInfo)
-
-		// output - c++ source
-		cpptmpl, err := template.ParseFiles("templates/serialize_cpp.tpl")
+		err = outputTemplateFile(wInfo, *cppFile, "serialize_cpp.tpl")
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
+			fmt.Println(err.Error())
 		}
-		var oFile *os.File
-		if len(*cppFile) > 0 {
-			oFile, err = os.Create(*cppFile)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-			}
-		} else {
-			oFile = os.Stdout
-		}
-		cpptmpl.Execute(oFile, wInfo)
 	}
 }
