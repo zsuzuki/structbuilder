@@ -44,7 +44,7 @@ func main() {
 			os.Exit(1)
 		}
 		// output - c++ header
-		hpptmpl, err := template.ParseFiles("output_hpp.tpl")
+		hpptmpl, err := template.ParseFiles("templates/serialize_hpp.tpl")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 		}
@@ -60,7 +60,7 @@ func main() {
 		hpptmpl.Execute(hFile, wInfo)
 
 		// output - c++ source
-		cpptmpl, err := template.ParseFiles("output_cpp.tpl")
+		cpptmpl, err := template.ParseFiles("templates/serialize_cpp.tpl")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 		}
