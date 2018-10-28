@@ -83,7 +83,7 @@ func main() {
 			fmt.Println(err.Error())
 		}
 		// output - c++ struct file
-		err = outputTemplateFile(gInfo, *hppFile, []string{"struct_hpp.tpl", "struct_base.tpl"})
+		err = outputTemplateFile(gInfo, *hppFile, []string{"struct_hpp.tpl", "struct_child.tpl"})
 		if err != nil {
 			fmt.Println(err.Error())
 		}
