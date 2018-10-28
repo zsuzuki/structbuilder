@@ -1,6 +1,6 @@
 namespace = "Sample"
 # local_include = ["test.hpp"]
-include = ["cstdint","vector"]
+include = ["cstdint","vector", "string", "array"]
 struct_name = "Test"
 comment = """
 Test class
@@ -51,6 +51,12 @@ type = "Child"
     name = "age"
     type = "bit-unsigned"
     bits = 6
+    offset = 18
+    [[member.Child]]
+    name = "step"
+    type = "bit-unsigned"
+    bits = 4
+    scale = 5
 [[member]]
 name = "entry_list"
 type = "Entry"

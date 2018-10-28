@@ -61,12 +61,12 @@ public:
 {{- else}}
 {{- if .IsSigned}}
   //
-  signed get{{.CapName}}() const { return bit_field.{{.Name}}; }
-  void set{{.CapName}}(signed n) { bit_field.{{.Name}} = n; }
+  signed get{{.CapName}}() const { return bit_field.{{.Name}} * {{.Scale}} + {{.Offset}}; }
+  void set{{.CapName}}(signed n) { bit_field.{{.Name}} = (n - {{.Offset}}) / {{.Scale}}; }
 {{- else}}
   //
-  unsigned get{{.CapName}}() const { return bit_field.{{.Name}}; }
-  void set{{.CapName}}(unsigned n) { bit_field.{{.Name}} = n; }{{end}}
+  unsigned get{{.CapName}}() const { return bit_field.{{.Name}} * {{.Scale}} + {{.Offset}}; }
+  void set{{.CapName}}(unsigned n) { bit_field.{{.Name}} = (n - {{.Offset}}) / {{.Scale}}; }{{end}}
 {{- end}}
 {{- end}}
 {{- range .TopStruct.Members}}

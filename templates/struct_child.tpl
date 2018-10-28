@@ -19,7 +19,11 @@
     // members
 {{- range .Members}}
 {{- if .Container}}
-    {{.Container}} {{.Name}};
+    {{- if .IsStatic}}
+    {{.Container}}<{{.Type}}, {{.Size}}> {{.Name}};
+    {{- else}}
+    {{.Container}}<{{.Type}}> {{.Name}};
+    {{- end}}
 {{- else}}
     {{.Type}} {{.Name}};
 {{- end}}
@@ -39,21 +43,25 @@
     void set{{.CapName}}(bool f) { bit_field.{{.Name}} = f; }
 {{- else if .IsSigned}}
     //
-    signed get{{.CapName}}() const { return bit_field.{{.Name}}; }
-    void set{{.CapName}}(signed n) { bit_field.{{.Name}} = n; }
+    signed get{{.CapName}}() const { return bit_field.{{.Name}} * {{.Scale}} + {{.Offset}}; }
+    void set{{.CapName}}(signed n) { bit_field.{{.Name}} = (n - {{.Offset}}) / {{.Scale}}; }
 {{- else}}
     //
-    unsigned get{{.CapName}}() const { return bit_field.{{.Name}}; }
-    void set{{.CapName}}(unsigned n) { bit_field.{{.Name}} = n; }{{end}}
+    unsigned get{{.CapName}}() const { return bit_field.{{.Name}} * {{.Scale}} + {{.Offset}}; }
+    void set{{.CapName}}(unsigned n) { bit_field.{{.Name}} = (n - {{.Offset}}) / {{.Scale}}; }{{end}}
 {{- end}}
 {{- range .Members}}
 {{- if .Container}}
+    //
     const {{.Type}}{{.Ref}} get{{.CapName}}(int idx) const { return {{.Name}}[idx]; }
     void set{{.CapName}}(int idx, {{.Type}}{{.Ref}} n) { {{.Name}}[idx] = n; }
     size_t get{{.CapName}}Size() const { return {{.Name}}.size(); }
+    {{- if not .IsStatic}}
     void append{{.CapName}}({{.Type}}{{.Ref}} n) { {{.Name}}.emplace_back(n); }
     void resize{{.CapName}}(size_t sz) { {{.Name}}.resize(sz); }
+    {{- end}}
 {{- else}}
+    //
     const {{.Type}}{{.Ref}} get{{.CapName}}() const { return {{.Name}}; }
     void set{{.CapName}}({{.Type}}{{.Ref}} n) { {{.Name}} = n; }
 {{- end}}
