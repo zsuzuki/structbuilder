@@ -18,9 +18,9 @@ public:
 {{end}}
 protected:
   // members
-{{if .BitField -}}
+{{if .BitField}}
   BitField bit_field;
-{{end}}
+{{- end}}
 {{- range .Members}}
 {{- if .Container}}
   {{.Container}} {{.Name}};
@@ -29,6 +29,13 @@ protected:
 {{- end}}
 {{- end}}
 public:
+{{- if .ReserveList}}
+  // constructor
+  {{.Name}}() {
+{{- range .ReserveList}}
+    {{.Name}}.resize({{.Size}});{{end}}
+  }
+{{end}}
   // interface
 {{- range .BitField -}}
   {{if .IsBool}}bool get{{.CapName}}() const { return bit_field.{{.Name}}; }

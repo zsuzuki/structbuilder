@@ -24,10 +24,12 @@ type = "int"
 name = "ranking"
 type = "uint8_t"
 container = "std::vector"
+reserve = 32
 [[member]]
 name = "line"
 type = "float"
 container = "std::vector"
+reserve = 8
 [[member]]
 name = "child"
 type = "Child"

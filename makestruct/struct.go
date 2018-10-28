@@ -42,12 +42,19 @@ type Member struct {
 	Ref       string
 }
 
+type Reserve struct {
+	Container string
+	Name      string
+	Size      int64
+}
+
 // StructInfo output struct information
 type StructInfo struct {
 	Name        string
 	BitField    []BitField
 	ChildStruct []StructInfo
 	Members     []Member
+	ReserveList []Reserve
 }
 
 // GlobalInfo is overall defined information
@@ -78,6 +85,7 @@ func parseStruct(members []*toml.Tree) (StructInfo, error) {
 		BitField:    []BitField{},
 		ChildStruct: []StructInfo{},
 		Members:     []Member{},
+		ReserveList: []Reserve{},
 	}
 	for _, m := range members {
 		name := m.Get("name")
@@ -118,6 +126,15 @@ func parseStruct(members []*toml.Tree) (StructInfo, error) {
 			container := m.Get("container")
 			if container != nil {
 				mm.Container = container.(string) + "<" + typeStr + ">"
+				rs := m.Get("reserve")
+				if rs != nil {
+					res := Reserve{
+						Container: mm.Container,
+						Name:      name.(string),
+						Size:      rs.(int64),
+					}
+					sInfo.ReserveList = append(sInfo.ReserveList, res)
+				}
 			}
 			ctype := m.Get(typeStr)
 			if ctype != nil {
