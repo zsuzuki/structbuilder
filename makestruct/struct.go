@@ -56,6 +56,7 @@ type Reserve struct {
 // StructInfo output struct information
 type StructInfo struct {
 	Name        string
+	IsClass     bool
 	BitField    []BitField
 	ChildStruct []StructInfo
 	Members     []Member
@@ -100,6 +101,7 @@ func parseStruct(members []*toml.Tree) (StructInfo, error) {
 		ChildStruct: []StructInfo{},
 		Members:     []Member{},
 		ReserveList: []Reserve{},
+		IsClass:     false,
 	}
 	for _, m := range members {
 		name := m.Get("name")
@@ -203,6 +205,7 @@ func ParseToml(tomlConfig *toml.Tree) (GlobalInfo, error) {
 		return gInfo, err
 	}
 	topStruct.Name = sn.(string)
+	topStruct.IsClass = true
 	gInfo.TopStruct = topStruct
 	return gInfo, nil
 }
