@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"./makestruct"
 	"./serialize"
 
 	"github.com/pelletier/go-toml"
@@ -35,7 +36,7 @@ func outputTemplateFile(data interface{}, name string, tempname string) error {
 // application
 //
 func main() {
-	ser := flag.Bool("s", true, "output serializer")
+	ser := flag.Bool("s", false, "output serializer")
 	cppFile := flag.String("cpp", "", "output c++ source filename")
 	hppFile := flag.String("hpp", "", "output c++ header filename")
 	indentStep := flag.Int("indent", 4, "indent step")
@@ -69,6 +70,16 @@ func main() {
 			fmt.Println(err.Error())
 		}
 		err = outputTemplateFile(wInfo, *cppFile, "serialize_cpp.tpl")
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	} else {
+		gInfo, err := makestruct.ParseToml(tomlConfig)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		// output - c++ struct file
+		err = outputTemplateFile(gInfo, *hppFile, "struct_hpp.tpl")
 		if err != nil {
 			fmt.Println(err.Error())
 		}

@@ -1,0 +1,49 @@
+namespace = "Sample"
+# local_include = ["test.hpp"]
+include = ["cstdint","vector"]
+struct_name = "Test"
+comment = """
+Test class
+"""
+
+[[member]]
+name = "index"
+type = "bit-unsigned"
+bits = 5
+[[member]]
+name = "generation"
+type = "bit-signed"
+bits = 3
+[[member]]
+name = "enabled"
+type = "bit-bool"
+[[member]]
+name = "count"
+type = "int"
+[[member]]
+name = "ranking"
+type = "uint8_t"
+container = "std::vector"
+[[member]]
+name = "line"
+type = "float"
+container = "std::vector"
+[[member]]
+name = "child"
+type = "Child"
+    [[member.Child]]
+    name = "name"
+    type = "std::string"
+    [[member.Child]]
+    name = "age"
+    type = "uint8_t"
+[[member]]
+name = "entry_list"
+type = "Entry"
+container = "std::vector"
+    [[member.Entry]]
+    name = "name"
+    type = "std::string"
+    [[member.Entry]]
+    name = "country"
+    type = "std::string"
