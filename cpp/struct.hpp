@@ -3,11 +3,12 @@
 // by structbuilder<https://github.com/zsuzuki/structbuilder>
 //
 #pragma once
+#include "test_def.hpp"
 
-#include <cstdint>
-#include <vector>
-#include <string>
 #include <array>
+#include <cstdint>
+#include <string>
+#include <vector>
 
 namespace Sample {
 
@@ -37,7 +38,6 @@ public:
       unsigned step : 4;
     };
     BitField bit_field;
-
     // members
     std::string name;
     // interface
@@ -65,14 +65,15 @@ public:
     const std::string getCountry() const { return country; }
     void setCountry(std::string n) { country = n; }
   };
+
 protected:
   struct BitField {
     unsigned index : 5;
-    signed   generation : 3;
+    unsigned beer_type : 7;
+    signed generation : 3;
     unsigned enabled : 1;
   };
   BitField bit_field;
-
   // members
   int count;
   std::vector<uint8_t> ranking;
@@ -80,6 +81,7 @@ protected:
   std::array<Note, 4> note;
   Child child;
   std::vector<Entry> entry_list;
+
 public:
   // constructor
   Test() {
@@ -91,6 +93,13 @@ public:
   //
   unsigned getIndex() const { return bit_field.index * 1 + 0; }
   void setIndex(unsigned n) { bit_field.index = (n - 0) / 1; }
+  //
+  BeerType getBeerType() const {
+    return static_cast<BeerType>(bit_field.beer_type);
+  }
+  void setBeerType(BeerType n) {
+    bit_field.beer_type = static_cast<unsigned>(n);
+  }
   //
   signed getGeneration() const { return bit_field.generation * 1 + 0; }
   void setGeneration(signed n) { bit_field.generation = (n - 0) / 1; }
@@ -113,17 +122,17 @@ public:
   void appendLine(float n) { line.emplace_back(n); }
   void resizeLine(size_t sz) { line.resize(sz); }
   //
-  const Note& getNote(int idx) const { return note[idx]; }
-  void setNote(int idx, Note& n) { note[idx] = n; }
+  const Note &getNote(int idx) const { return note[idx]; }
+  void setNote(int idx, Note &n) { note[idx] = n; }
   size_t getNoteSize() const { return note.size(); }
   //
-  const Child& getChild() const { return child; }
-  void setChild(Child& n) { child = n; }
+  const Child &getChild() const { return child; }
+  void setChild(Child &n) { child = n; }
   //
-  const Entry& getEntryList(int idx) const { return entry_list[idx]; }
-  void setEntryList(int idx, Entry& n) { entry_list[idx] = n; }
+  const Entry &getEntryList(int idx) const { return entry_list[idx]; }
+  void setEntryList(int idx, Entry &n) { entry_list[idx] = n; }
   size_t getEntryListSize() const { return entry_list.size(); }
-  void appendEntryList(Entry& n) { entry_list.emplace_back(n); }
+  void appendEntryList(Entry &n) { entry_list.emplace_back(n); }
   void resizeEntryList(size_t sz) { entry_list.resize(sz); }
 };
 } // namespace Sample

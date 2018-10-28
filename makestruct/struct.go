@@ -33,6 +33,7 @@ type BitField struct {
 	IsSigned bool
 	Offset   int64
 	Scale    int64
+	Cast     string
 }
 
 // Member is struct member
@@ -115,7 +116,15 @@ func parseStruct(members []*toml.Tree) (StructInfo, error) {
 		typeStr := mtype.(string)
 		if strings.HasPrefix(typeStr, "bit-") {
 			// bit field
+			castType := ""
 			isBool := typeStr == "bit-bool"
+			if typeStr == "bit-enum" {
+				typeStr = "bit-unsigned"
+				cast := m.Get("cast")
+				if cast != nil {
+					castType = cast.(string)
+				}
+			}
 			bf := BitField{
 				Name:     name.(string),
 				CapName:  capitalize(name.(string), ""),
@@ -124,6 +133,7 @@ func parseStruct(members []*toml.Tree) (StructInfo, error) {
 				IsSigned: !(isBool || typeStr == "bit-unsigned"),
 				Offset:   getInt(m, "offset", 0),
 				Scale:    getInt(m, "scale", 1),
+				Cast:     castType,
 			}
 			sInfo.BitField = append(sInfo.BitField, bf)
 		} else {

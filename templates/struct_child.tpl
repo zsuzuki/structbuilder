@@ -34,10 +34,10 @@ protected:{{end -}}
 {{- end}}
 {{- if .IsClass}}
 public:{{end -}}
-{{- with .ReserveList}}
+{{- if .ReserveList}}
   // constructor
   {{.Name}}() {
-{{- range .}}
+{{- range .ReserveList}}
     {{.Name}}.resize({{.Size}});{{end}}
   }
 {{end}}
@@ -47,6 +47,10 @@ public:{{end -}}
   //
   bool get{{.CapName}}() const { return bit_field.{{.Name}}; }
   void set{{.CapName}}(bool f) { bit_field.{{.Name}} = f; }
+{{- else if .Cast}}
+  //
+  {{.Cast}} get{{.CapName}}() const { return static_cast<{{.Cast}}>(bit_field.{{.Name}}); }
+  void set{{.CapName}}({{.Cast}} n) { bit_field.{{.Name}} = static_cast<unsigned>(n); }
 {{- else if .IsSigned}}
   //
   signed get{{.CapName}}() const { return bit_field.{{.Name}} * {{.Scale}} + {{.Offset}}; }

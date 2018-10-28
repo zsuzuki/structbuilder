@@ -1,5 +1,5 @@
 namespace = "Sample"
-# local_include = ["test.hpp"]
+local_include = ["test_def.hpp"]
 include = ["cstdint","vector", "string", "array"]
 struct_name = "Test"
 comment = """
@@ -10,6 +10,11 @@ Test class
 name = "index"
 type = "bit-unsigned"
 bits = 5
+[[member]]
+name = "beer_type"
+type = "bit-enum"
+cast = "BeerType"
+bits = 7
 [[member]]
 name = "generation"
 type = "bit-signed"
