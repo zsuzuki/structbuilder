@@ -34,7 +34,11 @@ protected:
   // members
 {{- range .TopStruct.Members}}
 {{- if .Container}}
-  {{.Container}} {{.Name}};
+  {{- if .IsStatic}}
+  {{.Container}}<{{.Type}}, {{.Size}}> {{.Name}};
+  {{- else}}
+  {{.Container}}<{{.Type}}> {{.Name}};
+  {{- end}}
 {{- else}}
   {{.Type}} {{.Name}};
 {{- end}}
@@ -71,8 +75,10 @@ public:
   const {{.Type}}{{.Ref}} get{{.CapName}}(int idx) const { return {{.Name}}[idx]; }
   void set{{.CapName}}(int idx, {{.Type}}{{.Ref}} n) { {{.Name}}[idx] = n; }
   size_t get{{.CapName}}Size() const { return {{.Name}}.size(); }
+  {{- if not .IsStatic}}
   void append{{.CapName}}({{.Type}}{{.Ref}} n) { {{.Name}}.emplace_back(n); }
   void resize{{.CapName}}(size_t sz) { {{.Name}}.resize(sz); }
+  {{- end}}
 {{- else}}
   //
   const {{.Type}}{{.Ref}} get{{.CapName}}() const { return {{.Name}}; }

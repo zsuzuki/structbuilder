@@ -31,6 +31,17 @@ type = "float"
 container = "std::vector"
 reserve = 8
 [[member]]
+name = "note"
+type = "Note"
+container = "std::array"
+reserve = 4
+    [[member.Note]]
+    name = "page"
+    type = "int"
+    [[member.Note]]
+    name = "line"
+    type = "int"
+[[member]]
 name = "child"
 type = "Child"
     [[member.Child]]

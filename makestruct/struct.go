@@ -40,8 +40,11 @@ type Member struct {
 	Type      string
 	Container string
 	Ref       string
+	IsStatic  bool
+	Size      int64
 }
 
+// Reserve is array size
 type Reserve struct {
 	Container string
 	Name      string
@@ -122,18 +125,36 @@ func parseStruct(members []*toml.Tree) (StructInfo, error) {
 				Type:      typeStr,
 				Container: "",
 				Ref:       "",
+				IsStatic:  false,
+				Size:      1,
 			}
 			container := m.Get("container")
 			if container != nil {
-				mm.Container = container.(string) + "<" + typeStr + ">"
+				isStatic := func() bool {
+					switch container.(string) {
+					case "std::vector":
+						return false
+					default:
+					}
+					return true
+				}()
+				mm.IsStatic = isStatic
+				mm.Container = container.(string)
 				rs := m.Get("reserve")
 				if rs != nil {
-					res := Reserve{
-						Container: mm.Container,
-						Name:      name.(string),
-						Size:      rs.(int64),
+					if isStatic {
+						mm.Size = rs.(int64)
+					} else {
+						// for vector
+						res := Reserve{
+							Container: mm.Container,
+							Name:      name.(string),
+							Size:      rs.(int64),
+						}
+						sInfo.ReserveList = append(sInfo.ReserveList, res)
 					}
-					sInfo.ReserveList = append(sInfo.ReserveList, res)
+				} else if isStatic {
+					return sInfo, &myError{msg: "not defined size: " + name.(string)}
 				}
 			}
 			ctype := m.Get(typeStr)
