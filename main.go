@@ -14,8 +14,12 @@ import (
 )
 
 // output file by template(default is Stdout)
-func outputTemplateFile(data interface{}, name string, tempname string) error {
-	tmpl, err := template.ParseFiles(filepath.Join("templates", tempname))
+func outputTemplateFile(data interface{}, name string, tempname []string) error {
+	fl := []string{}
+	for _, tn := range tempname {
+		fl = append(fl, filepath.Join("templates", tn))
+	}
+	tmpl, err := template.ParseFiles(fl...)
 	if err != nil {
 		return err
 	}
@@ -65,11 +69,11 @@ func main() {
 			os.Exit(1)
 		}
 		// output - c++ serialize file
-		err := outputTemplateFile(wInfo, *hppFile, "serialize_hpp.tpl")
+		err := outputTemplateFile(wInfo, *hppFile, []string{"serialize_hpp.tpl"})
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		err = outputTemplateFile(wInfo, *cppFile, "serialize_cpp.tpl")
+		err = outputTemplateFile(wInfo, *cppFile, []string{"serialize_cpp.tpl"})
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -79,7 +83,7 @@ func main() {
 			fmt.Println(err.Error())
 		}
 		// output - c++ struct file
-		err = outputTemplateFile(gInfo, *hppFile, "struct_hpp.tpl")
+		err = outputTemplateFile(gInfo, *hppFile, []string{"struct_hpp.tpl", "struct_base.tpl"})
 		if err != nil {
 			fmt.Println(err.Error())
 		}
