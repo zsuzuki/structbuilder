@@ -38,7 +38,8 @@ type = "Child"
     type = "std::string"
     [[member.Child]]
     name = "age"
-    type = "uint8_t"
+    type = "bit-unsigned"
+    bits = 6
 [[member]]
 name = "entry_list"
 type = "Entry"
