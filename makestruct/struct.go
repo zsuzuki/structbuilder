@@ -75,6 +75,7 @@ type StructInfo struct {
 	EnumList    []EnumInfo
 	Serializer  string
 	SJson       string
+	UseLua      bool
 }
 
 // GlobalInfo is overall defined information
@@ -86,6 +87,7 @@ type GlobalInfo struct {
 	HeaderGlobalB bool
 	HeaderNameJ   string
 	HeaderGlobalJ bool
+	UseLua        bool
 	TopStruct     StructInfo
 }
 
@@ -121,6 +123,7 @@ func parseStruct(members []*toml.Tree, sname string) (StructInfo, error) {
 		Members:     []Member{},
 		ReserveList: []Reserve{},
 		IsClass:     false,
+		UseLua:      false,
 	}
 	for _, m := range members {
 		name := m.Get("name")
@@ -242,6 +245,7 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string) (Glo
 		HeaderNameJ:   "",
 		HeaderGlobalB: false,
 		HeaderGlobalJ: false,
+		UseLua:        false,
 	}
 	fullHpp, _ := filepath.Abs(hpp)
 	hppPath := filepath.Dir(fullHpp)
@@ -290,6 +294,11 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string) (Glo
 	if serJ != nil {
 		topStruct.SJson = serJ.(string)
 	}
+	lua := tomlConfig.Get("lua")
+	if lua != nil {
+		gInfo.UseLua = lua.(bool)
+	}
+	topStruct.UseLua = gInfo.UseLua
 	topStruct.IsClass = true
 	gInfo.TopStruct = topStruct
 	return gInfo, nil

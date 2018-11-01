@@ -99,10 +99,11 @@ func main() {
 	hppFile := flag.String("hpp", "", "output c++ header filename")
 	sjsonFile := flag.String("json", "", "output c++ source filename(json serializer)")
 	serFile := flag.String("serialize", "", "output c++ source filename(serializer)")
+	luaFile := flag.String("lua", "", "output lua interface c++ source filename")
 	flag.BoolVar(&enableFormat, "format", false, "use clang-format")
 	indentStep := flag.Int("indent", 4, "indent step")
 	flag.Parse()
-	fmt.Printf("output: %s %s %s %s\n", *hppFile, *cppFile, *sjsonFile, *serFile)
+	fmt.Printf("output: %s %s %s %s %s\n", *hppFile, *cppFile, *sjsonFile, *serFile, *luaFile)
 
 	// file input
 	fArgs := flag.Args()
@@ -150,6 +151,13 @@ func main() {
 		}
 		if gInfo.TopStruct.SJson != "" {
 			err = outputTemplateFile(gInfo, *sjsonFile, []string{"struct_json.tpl", "struct_json_child_out.tpl", "struct_json_child_in.tpl"})
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+		}
+		if gInfo.UseLua {
+			err = outputTemplateFile(gInfo, *luaFile, []string{"luasol.tpl"})
 			if err != nil {
 				fmt.Println(err.Error())
 				os.Exit(1)

@@ -8,6 +8,7 @@ Test class
 
 serializer_json = "nlohmann::json"
 serializer = "Serializer"
+lua = true
 
 [[member]]
 name = "index"

@@ -9,6 +9,7 @@
 {{if gt (len .Include) 0}}{{range .Include}}#include <{{.}}>
 {{end -}}
 {{end}}
+{{- if .UseLua}}#include <sol/sol.hpp>{{end}}
 {{if .NameSpace}}namespace {{.NameSpace}} {
 {{- end}}
 {{template "struct_base" .TopStruct}}

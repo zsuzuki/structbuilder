@@ -8,6 +8,7 @@
 {{else}}
 #include "{{.HeaderNameJ}}"
 {{end}}{{end}}
+
 #include <map>
 
 using json = {{.TopStruct.SJson}};
