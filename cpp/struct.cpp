@@ -5,24 +5,9 @@
 #include "struct.hpp"
 #include <fstream>
 #include <iostream>
+#include <sol/sol.hpp>
 
 using json = nlohmann::json;
-
-using BeerType = Sample::Test::BeerType;
-
-void checkBeer(const Sample::Test &t) {
-  switch (t.getBeerType()) {
-  case BeerType::Ales:
-    std::cout << "Ales" << std::endl;
-    break;
-  case BeerType::Lambic:
-    std::cout << "Lambic" << std::endl;
-    break;
-  default:
-    std::cout << "Other" << std::endl;
-    break;
-  }
-}
 
 int main(int argc, char **argv) {
   Sample::Test test;
@@ -36,7 +21,13 @@ int main(int argc, char **argv) {
   test.setCount(cnt);
   std::cout << "Execute count: " << cnt << std::endl;
 
-  checkBeer(test);
+  sol::state lua;
+  lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::coroutine,
+                     sol::lib::string, sol::lib::math, sol::lib::table,
+                     sol::lib::debug, sol::lib::bit32);
+  test.setLUA(lua);
+  lua["gTest"] = &test;
+  lua.script_file("lua/struct.lua");
 
   Sample::Test t2;
   {

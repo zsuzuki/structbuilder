@@ -3,18 +3,27 @@
 // by structbuilder<https://github.com/zsuzuki/structbuilder>
 //
 #pragma once
-#include "test_def.hpp"
+#include "serializer.hpp"
 
 #include <array>
 #include <cstdint>
+#include <nlohmann/json.hpp>
+#include <sol/sol.hpp>
 #include <string>
 #include <vector>
-
 namespace Sample {
 
 //
 class Test {
 public:
+  enum class BeerType : uint8_t {
+    Ales,
+    Larger,
+    Pilsner,
+    Lambic,
+    IPA,
+  };
+
   // child class
 
   //
@@ -69,13 +78,14 @@ public:
 protected:
   struct BitField {
     unsigned index : 5;
-    unsigned beer_type : 7;
+    unsigned beer_type : 5;
     signed generation : 3;
     unsigned enabled : 1;
   };
   BitField bit_field;
   // members
   int count;
+  uint32_t max_speed;
   std::vector<uint8_t> ranking;
   std::vector<float> line;
   std::array<Note, 4> note;
@@ -88,7 +98,14 @@ public:
     ranking.resize(32);
     line.resize(8);
   }
-
+  //
+  void serialize(Serializer &ser);
+  void deserialize(Serializer &ser);
+  //
+  void serializeJSON(nlohmann::json &json);
+  void deserializeJSON(nlohmann::json &json);
+  //
+  void setLUA(sol::state &lua);
   // interface
   //
   unsigned getIndex() const { return bit_field.index * 1 + 0; }
@@ -109,6 +126,9 @@ public:
   //
   const int getCount() const { return count; }
   void setCount(int n) { count = n; }
+  //
+  const uint32_t getMaxSpeed() const { return max_speed; }
+  void setMaxSpeed(uint32_t n) { max_speed = n; }
   //
   const uint8_t getRanking(int idx) const { return ranking[idx]; }
   void setRanking(int idx, uint8_t n) { ranking[idx] = n; }
