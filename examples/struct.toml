@@ -17,7 +17,7 @@ bits = 5
 name = "beer_type"
 type = "bit-enum"
 cast = "BeerType"
-bits = 7
+bits = 5
 enum = ["Ales","Larger","Pilsner","Lambic","IPA"]
 [[member]]
 name = "generation"
@@ -29,6 +29,9 @@ type = "bit-bool"
 [[member]]
 name = "count"
 type = "int"
+[[member]]
+name = "max_speed"
+type = "uint32_t"
 [[member]]
 name = "ranking"
 type = "uint8_t"

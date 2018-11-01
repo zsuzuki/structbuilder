@@ -13,40 +13,42 @@ using BeerType = Sample::Test::BeerType;
 void checkBeer(const Sample::Test &t) {
   switch (t.getBeerType()) {
   case BeerType::Ales:
-    std::cout << "I love" << std::endl;
+    std::cout << "Ales" << std::endl;
     break;
   case BeerType::Lambic:
-    std::cout << "normal" << std::endl;
+    std::cout << "Lambic" << std::endl;
     break;
   default:
-    std::cout << "I like" << std::endl;
+    std::cout << "Other" << std::endl;
     break;
   }
 }
 
 int main(int argc, char **argv) {
-  Sample::Test test1, test2;
-
+  Sample::Test test;
   {
     std::ifstream ifile("save.json");
     json ij;
     ifile >> ij;
-    test1.deserializeJSON(ij);
+    test.deserializeJSON(ij);
   }
+  auto cnt = test.getCount() + 1;
+  test.setCount(cnt);
+  std::cout << "Execute count: " << cnt << std::endl;
 
-  checkBeer(test1);
-  checkBeer(test2);
+  checkBeer(test);
 
-  json j;
-  test1.serializeJSON(j);
-  std::cout << j << std::endl;
-
-  test2.deserializeJSON(j);
-  std::cout << test2.getChild().getAge() << std::endl;
-  std::cout << test2.getChild().getStep() << std::endl;
-
-  std::ofstream ofile{"save.json"};
-  ofile << j;
+  Sample::Test t2;
+  {
+    json j;
+    test.serializeJSON(j);
+    std::ofstream ofile{"save.json"};
+    ofile << j;
+    t2.deserializeJSON(j);
+  }
+  std::cout << "Name: \"" << t2.getChild().getName()
+            << "\", age=" << t2.getChild().getAge()
+            << ", step=" << t2.getChild().getStep() << std::endl;
 
   return 0;
 }
