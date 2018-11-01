@@ -1,9 +1,14 @@
 //
-//
+// struct input/output test
 //
 
 #include "struct.hpp"
+#include <fstream>
 #include <iostream>
+
+using json = nlohmann::json;
+
+using BeerType = Sample::Test::BeerType;
 
 void checkBeer(const Sample::Test &t) {
   switch (t.getBeerType()) {
@@ -22,21 +27,26 @@ void checkBeer(const Sample::Test &t) {
 int main(int argc, char **argv) {
   Sample::Test test1, test2;
 
-  test1.setBeerType(BeerType::Pilsner);
-  test2.setBeerType(BeerType::Lambic);
-  auto ch = test1.getChild();
-  ch.setAge(80);
-  ch.setStep(42);
-  test1.setChild(ch);
-
-  auto e = Sample::Test::Entry{};
-  e.setName("OK");
-  test2.appendEntryList(e);
-
-  std::cout << ch.getAge() << "/" << ch.getStep() << ", " << e.getName()
-            << std::endl;
+  {
+    std::ifstream ifile("save.json");
+    json ij;
+    ifile >> ij;
+    test1.deserializeJSON(ij);
+  }
 
   checkBeer(test1);
   checkBeer(test2);
+
+  json j;
+  test1.serializeJSON(j);
+  std::cout << j << std::endl;
+
+  test2.deserializeJSON(j);
+  std::cout << test2.getChild().getAge() << std::endl;
+  std::cout << test2.getChild().getStep() << std::endl;
+
+  std::ofstream ofile{"save.json"};
+  ofile << j;
+
   return 0;
 }

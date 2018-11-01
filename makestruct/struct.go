@@ -1,6 +1,7 @@
 package makestruct
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/pelletier/go-toml"
@@ -45,6 +46,8 @@ type Member struct {
 	Ref       string
 	IsStatic  bool
 	Size      int64
+	HasChild  bool
+	Child     *StructInfo
 }
 
 // Reserve is array size
@@ -52,6 +55,13 @@ type Reserve struct {
 	Container string
 	Name      string
 	Size      int64
+}
+
+// EnumInfo is defined enumerate list
+type EnumInfo struct {
+	StructName string
+	Name       string
+	List       []string
 }
 
 // StructInfo output struct information
@@ -62,14 +72,21 @@ type StructInfo struct {
 	ChildStruct []StructInfo
 	Members     []Member
 	ReserveList []Reserve
+	EnumList    []EnumInfo
+	Serializer  string
+	SJson       string
 }
 
 // GlobalInfo is overall defined information
 type GlobalInfo struct {
-	NameSpace    string
-	Include      []string
-	LocalInclude []string
-	TopStruct    StructInfo
+	NameSpace     string
+	Include       []string
+	LocalInclude  []string
+	HeaderNameB   string
+	HeaderGlobalB bool
+	HeaderNameJ   string
+	HeaderGlobalJ bool
+	TopStruct     StructInfo
 }
 
 // build string list from toml attribute
@@ -96,8 +113,9 @@ func getInt(tomlConfig *toml.Tree, attr string, number int64) int64 {
 
 // parse struct
 //
-func parseStruct(members []*toml.Tree) (StructInfo, error) {
+func parseStruct(members []*toml.Tree, sname string) (StructInfo, error) {
 	sInfo := StructInfo{
+		Name:        sname,
 		BitField:    []BitField{},
 		ChildStruct: []StructInfo{},
 		Members:     []Member{},
@@ -123,6 +141,12 @@ func parseStruct(members []*toml.Tree) (StructInfo, error) {
 				cast := m.Get("cast")
 				if cast != nil {
 					castType = cast.(string)
+					enumInfo := EnumInfo{
+						StructName: sname,
+						Name:       castType,
+						List:       getStringList(m, "enum"),
+					}
+					sInfo.EnumList = append(sInfo.EnumList, enumInfo)
 				}
 			}
 			bf := BitField{
@@ -145,6 +169,8 @@ func parseStruct(members []*toml.Tree) (StructInfo, error) {
 				Ref:       "",
 				IsStatic:  false,
 				Size:      1,
+				HasChild:  false,
+				Child:     nil,
 			}
 			container := m.Get("container")
 			if container != nil {
@@ -178,13 +204,14 @@ func parseStruct(members []*toml.Tree) (StructInfo, error) {
 			ctype := m.Get(typeStr)
 			if ctype != nil {
 				// child is new struct
-				cS, err := parseStruct(ctype.([]*toml.Tree))
+				cS, err := parseStruct(ctype.([]*toml.Tree), typeStr)
 				if err != nil {
 					return sInfo, err
 				}
-				cS.Name = typeStr
 				sInfo.ChildStruct = append(sInfo.ChildStruct, cS)
 				mm.Ref = "&"
+				mm.HasChild = true
+				mm.Child = &cS
 			}
 			sInfo.Members = append(sInfo.Members, mm)
 		}
@@ -192,14 +219,55 @@ func parseStruct(members []*toml.Tree) (StructInfo, error) {
 	return sInfo, nil
 }
 
+//
+func checkRelPath(basePath string, targetPath string) (string, bool) {
+	if filepath.HasPrefix(basePath, targetPath) {
+		p := basePath[len(targetPath):]
+		if strings.HasPrefix(p, "/") {
+			p = p[1:]
+		}
+		return p, true
+	}
+	return "", false
+}
+
 // ParseToml setup serialize code information by toml
 //
-func ParseToml(tomlConfig *toml.Tree) (GlobalInfo, error) {
+func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string) (GlobalInfo, error) {
 	gInfo := GlobalInfo{
-		Include:      getStringList(tomlConfig, "include"),
-		LocalInclude: getStringList(tomlConfig, "local_include"),
-		NameSpace:    tomlConfig.Get("namespace").(string),
+		Include:       getStringList(tomlConfig, "include"),
+		LocalInclude:  getStringList(tomlConfig, "local_include"),
+		NameSpace:     tomlConfig.Get("namespace").(string),
+		HeaderNameB:   "",
+		HeaderNameJ:   "",
+		HeaderGlobalB: false,
+		HeaderGlobalJ: false,
 	}
+	fullHpp, _ := filepath.Abs(hpp)
+	hppPath := filepath.Dir(fullHpp)
+	if bser != "" {
+		fullBinSer, _ := filepath.Abs(bser)
+		bserPath := filepath.Dir(fullBinSer)
+		bP, ex := checkRelPath(hppPath, bserPath)
+		if ex {
+			gInfo.HeaderNameB = filepath.Join(bP, filepath.Base(hpp))
+		} else {
+			gInfo.HeaderNameB = filepath.Base(hpp)
+		}
+		gInfo.HeaderGlobalB = !ex
+	}
+	if json != "" {
+		fullPathJs, _ := filepath.Abs(json)
+		jsonPath := filepath.Dir(fullPathJs)
+		jP, ex := checkRelPath(hppPath, jsonPath)
+		if ex {
+			gInfo.HeaderNameJ = filepath.Join(jP, filepath.Base(hpp))
+		} else {
+			gInfo.HeaderNameJ = filepath.Base(hpp)
+		}
+		gInfo.HeaderGlobalJ = !ex
+	}
+
 	// top level struct
 	sn := tomlConfig.Get("struct_name")
 	if sn == nil {
@@ -210,11 +278,18 @@ func ParseToml(tomlConfig *toml.Tree) (GlobalInfo, error) {
 		return gInfo, &myError{msg: "not have members"}
 	}
 
-	topStruct, err := parseStruct(members.([]*toml.Tree))
+	topStruct, err := parseStruct(members.([]*toml.Tree), sn.(string))
 	if err != nil {
 		return gInfo, err
 	}
-	topStruct.Name = sn.(string)
+	ser := tomlConfig.Get("serializer")
+	if ser != nil {
+		topStruct.Serializer = ser.(string)
+	}
+	serJ := tomlConfig.Get("serializer_json")
+	if serJ != nil {
+		topStruct.SJson = serJ.(string)
+	}
 	topStruct.IsClass = true
 	gInfo.TopStruct = topStruct
 	return gInfo, nil

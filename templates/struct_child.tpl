@@ -3,6 +3,13 @@
 {{if .IsClass}}class{{else}}struct{{end}} {{.Name}} {
 {{- if .IsClass}}
 public:{{end -}}
+{{- with .EnumList}}
+{{- range .}}
+  enum class {{.Name}} : uint8_t {
+{{range .List}}    {{.}},{{end}}
+  };
+{{- end}}
+{{end}}
 {{- with .ChildStruct}}
   // child class
 {{- range .}}
@@ -39,8 +46,15 @@ public:{{end -}}
   {{.Name}}() {
 {{- range .ReserveList}}
     {{.Name}}.resize({{.Size}});{{end}}
-  }
-{{end}}
+  }{{end}}
+{{- if .Serializer}}
+  //
+  void serialize({{.Serializer}}& ser);
+  void deserialize({{.Serializer}}& ser);{{end}}
+{{- if .SJson}}
+  //
+  void serializeJSON({{.SJson}}& json);
+  void deserializeJSON({{.SJson}}& json);{{end}}
   // interface
 {{- range .BitField}}
 {{- if .IsBool}}

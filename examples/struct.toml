@@ -1,10 +1,13 @@
 namespace = "Sample"
-local_include = ["test_def.hpp"]
-include = ["cstdint","vector", "string", "array"]
+local_include = ["serializer.hpp"]
+include = ["cstdint","vector","string","array","nlohmann/json.hpp"]
 struct_name = "Test"
 comment = """
 Test class
 """
+
+serializer_json = "nlohmann::json"
+serializer = "Serializer"
 
 [[member]]
 name = "index"
@@ -15,6 +18,7 @@ name = "beer_type"
 type = "bit-enum"
 cast = "BeerType"
 bits = 7
+enum = ["Ales","Larger","Pilsner","Lambic","IPA"]
 [[member]]
 name = "generation"
 type = "bit-signed"

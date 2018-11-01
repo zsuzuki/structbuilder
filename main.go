@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"text/template"
 
 	"./makestruct"
@@ -16,6 +17,49 @@ import (
 
 var (
 	enableFormat bool
+	myName       = ""
+	objName      = []string{}
+	tmplPushStr  = []string{}
+	tmplFuncs    = template.FuncMap{
+		"pushStr": func(str ...string) string {
+			ns := ""
+			for _, s := range str {
+				ns += s
+			}
+			tmplPushStr = append(tmplPushStr, ns)
+			return ""
+		},
+		"popStr": func() string {
+			tmplPushStr = tmplPushStr[:len(tmplPushStr)-1]
+			return ""
+		},
+		"getStr": func() string { return strings.Join(tmplPushStr, "") },
+		"setMyName": func(n string) string {
+			myName = n
+			return ""
+		},
+		"clearMyName": func() string {
+			myName = ""
+			return ""
+		},
+		"myName": func() string {
+			if myName == "" {
+				return ""
+			}
+			return myName + "."
+		},
+		"pushObj": func(o string) string {
+			objName = append(objName, o)
+			return ""
+		},
+		"popObj": func() string {
+			objName = objName[:len(objName)-1]
+			return ""
+		},
+		"getObj": func() string {
+			return objName[len(objName)-1]
+		},
+	}
 )
 
 // output file by template(default is Stdout)
@@ -24,7 +68,7 @@ func outputTemplateFile(data interface{}, name string, tempname []string) error 
 	for _, tn := range tempname {
 		fl = append(fl, filepath.Join("templates", tn))
 	}
-	tmpl, err := template.ParseFiles(fl...)
+	tmpl, err := template.New(filepath.Base(fl[0])).Funcs(tmplFuncs).ParseFiles(fl...)
 	if err != nil {
 		return err
 	}
@@ -53,10 +97,12 @@ func main() {
 	ser := flag.Bool("s", false, "output serializer")
 	cppFile := flag.String("cpp", "", "output c++ source filename")
 	hppFile := flag.String("hpp", "", "output c++ header filename")
+	sjsonFile := flag.String("json", "", "output c++ source filename(json serializer)")
+	serFile := flag.String("serialize", "", "output c++ source filename(serializer)")
 	flag.BoolVar(&enableFormat, "format", false, "use clang-format")
 	indentStep := flag.Int("indent", 4, "indent step")
 	flag.Parse()
-	fmt.Printf("output: %s %s\n", *hppFile, *cppFile)
+	fmt.Printf("output: %s %s %s %s\n", *hppFile, *cppFile, *sjsonFile, *serFile)
 
 	// file input
 	fArgs := flag.Args()
@@ -91,7 +137,7 @@ func main() {
 			os.Exit(1)
 		}
 	} else {
-		gInfo, err := makestruct.ParseToml(tomlConfig)
+		gInfo, err := makestruct.ParseToml(tomlConfig, *hppFile, *serFile, *sjsonFile)
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
@@ -101,6 +147,13 @@ func main() {
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
+		}
+		if gInfo.TopStruct.SJson != "" {
+			err = outputTemplateFile(gInfo, *sjsonFile, []string{"struct_json.tpl", "struct_json_child_out.tpl", "struct_json_child_in.tpl"})
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
 		}
 	}
 }
