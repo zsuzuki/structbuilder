@@ -26,20 +26,19 @@ int main(int argc, char **argv) {
                      sol::lib::string, sol::lib::math, sol::lib::table,
                      sol::lib::debug, sol::lib::bit32);
   test.setLUA(lua);
+  std::vector<std::string> args;
+  for (int i = 1; i < argc; i++)
+    args.emplace_back(argv[i]);
+  lua["args"] = args;
   lua["gTest"] = &test;
   lua.script_file("lua/struct.lua");
 
-  Sample::Test t2;
   {
     json j;
     test.serializeJSON(j);
     std::ofstream ofile{"save.json"};
     ofile << j;
-    t2.deserializeJSON(j);
   }
-  std::cout << "Name: \"" << t2.getChild().getName()
-            << "\", age=" << t2.getChild().getAge()
-            << ", step=" << t2.getChild().getStep() << std::endl;
 
   return 0;
 }
