@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project(struct CXX)
+set(CMAKE_CXX_FLAGS "-std=c++14 -Wall")
+add_executable(struct cpp/struct.cpp cpp/struct_json.cpp cpp/struct_lua.cpp)
+target_link_libraries(struct lua dl)

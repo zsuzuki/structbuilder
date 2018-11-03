@@ -5,81 +5,77 @@
 #pragma once
 #include "serializer.hpp"
 
-#include <array>
 #include <cstdint>
+#include <vector>
+#include <string>
+#include <array>
 #include <nlohmann/json.hpp>
 #include <sol/sol.hpp>
-#include <string>
-#include <vector>
 namespace Sample {
 
 //
 class Test {
 public:
   enum class BeerType : uint8_t {
-    Ales,
-    Larger,
-    Pilsner,
-    Lambic,
-    IPA,
+    Ales,    Larger,    Pilsner,    Lambic,    IPA,
   };
 
   // child class
 
+//
+struct Note {
+  // members
+  int page;
+  int line;
+  // interface
   //
-  struct Note {
-    // members
-    int page;
-    int line;
-    // interface
-    //
-    const int getPage() const { return page; }
-    void setPage(int n) { page = n; }
-    //
-    const int getLine() const { return line; }
-    void setLine(int n) { line = n; }
-  };
+  const int getPage() const { return page; }
+  void setPage(int n) { page = n; }
+  //
+  const int getLine() const { return line; }
+  void setLine(int n) { line = n; }
+};
 
-  //
-  struct Child {
-    struct BitField {
-      unsigned age : 6;
-      unsigned step : 4;
-    };
-    BitField bit_field;
-    // members
-    std::string name;
-    // interface
-    //
-    unsigned getAge() const { return bit_field.age * 1 + 18; }
-    void setAge(unsigned n) { bit_field.age = (n - 18) / 1; }
-    //
-    unsigned getStep() const { return bit_field.step * 5 + 0; }
-    void setStep(unsigned n) { bit_field.step = (n - 0) / 5; }
-    //
-    const std::string getName() const { return name; }
-    void setName(std::string n) { name = n; }
+//
+struct Child {
+  struct BitField {
+    unsigned age : 6;
+    unsigned step : 4;
   };
+  BitField bit_field;
+  // members
+  std::string name;
+  // interface
+  //
+  unsigned getAge() const { return bit_field.age * 1 + 18; }
+  void setAge(unsigned n) { bit_field.age = (n - 18) / 1; }
+  //
+  unsigned getStep() const { return bit_field.step * 5 + 0; }
+  void setStep(unsigned n) { bit_field.step = (n - 0) / 5; }
+  //
+  const std::string getName() const { return name; }
+  void setName(std::string n) { name = n; }
+};
 
+//
+struct Entry {
+  // members
+  std::string name;
+  std::string country;
+  // interface
   //
-  struct Entry {
-    // members
-    std::string name;
-    std::string country;
-    // interface
-    //
-    const std::string getName() const { return name; }
-    void setName(std::string n) { name = n; }
-    //
-    const std::string getCountry() const { return country; }
-    void setCountry(std::string n) { country = n; }
-  };
+  const std::string getName() const { return name; }
+  void setName(std::string n) { name = n; }
+  //
+  const std::string getCountry() const { return country; }
+  void setCountry(std::string n) { country = n; }
+};
 
 protected:
   struct BitField {
     unsigned index : 5;
     unsigned beer_type : 5;
-    signed generation : 3;
+    signed   generation : 3;
     unsigned enabled : 1;
   };
   BitField bit_field;
@@ -91,7 +87,6 @@ protected:
   std::array<Note, 4> note;
   Child child;
   std::vector<Entry> entry_list;
-
 public:
   // constructor
   Test() {
@@ -99,24 +94,20 @@ public:
     line.resize(8);
   }
   //
-  void serialize(Serializer &ser);
-  void deserialize(Serializer &ser);
+  void serialize(Serializer& ser);
+  void deserialize(Serializer& ser);
   //
-  void serializeJSON(nlohmann::json &json);
-  void deserializeJSON(nlohmann::json &json);
+  void serializeJSON(nlohmann::json& json);
+  void deserializeJSON(nlohmann::json& json);
   //
-  void setLUA(sol::state &lua);
+  void setLUA(sol::state& lua);
   // interface
   //
   unsigned getIndex() const { return bit_field.index * 1 + 0; }
   void setIndex(unsigned n) { bit_field.index = (n - 0) / 1; }
   //
-  BeerType getBeerType() const {
-    return static_cast<BeerType>(bit_field.beer_type);
-  }
-  void setBeerType(BeerType n) {
-    bit_field.beer_type = static_cast<unsigned>(n);
-  }
+  BeerType getBeerType() const { return static_cast<BeerType>(bit_field.beer_type); }
+  void setBeerType(BeerType n) { bit_field.beer_type = static_cast<unsigned>(n); }
   //
   signed getGeneration() const { return bit_field.generation * 1 + 0; }
   void setGeneration(signed n) { bit_field.generation = (n - 0) / 1; }
@@ -142,17 +133,17 @@ public:
   void appendLine(float n) { line.emplace_back(n); }
   void resizeLine(size_t sz) { line.resize(sz); }
   //
-  const Note &getNote(int idx) const { return note[idx]; }
-  void setNote(int idx, Note &n) { note[idx] = n; }
+  const Note& getNote(int idx) const { return note[idx]; }
+  void setNote(int idx, Note& n) { note[idx] = n; }
   size_t getNoteSize() const { return note.size(); }
   //
-  const Child &getChild() const { return child; }
-  void setChild(Child &n) { child = n; }
+  const Child& getChild() const { return child; }
+  void setChild(Child& n) { child = n; }
   //
-  const Entry &getEntryList(int idx) const { return entry_list[idx]; }
-  void setEntryList(int idx, Entry &n) { entry_list[idx] = n; }
+  const Entry& getEntryList(int idx) const { return entry_list[idx]; }
+  void setEntryList(int idx, Entry& n) { entry_list[idx] = n; }
   size_t getEntryListSize() const { return entry_list.size(); }
-  void appendEntryList(Entry &n) { entry_list.emplace_back(n); }
+  void appendEntryList(Entry& n) { entry_list.emplace_back(n); }
   void resizeEntryList(size_t sz) { entry_list.resize(sz); }
 };
 } // namespace Sample
