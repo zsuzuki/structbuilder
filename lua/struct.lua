@@ -1,5 +1,5 @@
 -- test
-print "Hello LUA"
+print(string.format("Hello LUA(%s)",ExecuteFilename))
 print("Count:",gTest.count)
 print("Line2:",gTest.line[2],#gTest.line)
 print("BeerType:",gTest.beer_type)
@@ -27,5 +27,7 @@ for ei, ev in ipairs(gTest.entry_list) do
     print(m)
 end
 print(Test.BeerType.Lambic)
-print(args[1])
+for ai, arg in ipairs(args) do
+    print(string.format("    arg[%d]: %s",ai,arg))
+end
 print "Good bye LUA"

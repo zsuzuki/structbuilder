@@ -22,7 +22,9 @@ void Test::setLUA(sol::state& lua)
   lua.new_usertype<Entry>(
     "TestEntry",
     "name", &Entry::name,
-    "country", &Entry::country);
+    "country", &Entry::country,
+    "point", &Entry::point,
+    "wins", &Entry::wins);
   lua.new_usertype<Test>(
     "Test",
     "index", sol::property(&Test::getIndex, &Test::setIndex),

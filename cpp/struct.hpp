@@ -62,6 +62,8 @@ struct Entry {
   // members
   std::string name;
   std::string country;
+  uint16_t point;
+  uint8_t wins;
   // interface
   //
   const std::string getName() const { return name; }
@@ -69,6 +71,12 @@ struct Entry {
   //
   const std::string getCountry() const { return country; }
   void setCountry(std::string n) { country = n; }
+  //
+  const uint16_t getPoint() const { return point; }
+  void setPoint(uint16_t n) { point = n; }
+  //
+  const uint8_t getWins() const { return wins; }
+  void setWins(uint8_t n) { wins = n; }
 };
 
 protected:

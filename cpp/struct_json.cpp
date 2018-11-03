@@ -56,6 +56,8 @@ void Test::serializeJSON(json& j) {
         json     jEntryList;
         jEntryList["name"] = tEntryList.name;
         jEntryList["country"] = tEntryList.country;
+        jEntryList["point"] = tEntryList.point;
+        jEntryList["wins"] = tEntryList.wins;
         jsonObject["entry_list"].push_back(jEntryList);
     }
     //
@@ -127,6 +129,12 @@ void Test::deserializeJSON(json& j) {
     }
     if (!jEntryListIt["country"].is_null()) {
     tObj.country = jEntryListIt["country"];
+    }
+    if (!jEntryListIt["point"].is_null()) {
+    tObj.point = jEntryListIt["point"];
+    }
+    if (!jEntryListIt["wins"].is_null()) {
+    tObj.wins = jEntryListIt["wins"];
     }
         entry_list.emplace_back(tObj);
     }
