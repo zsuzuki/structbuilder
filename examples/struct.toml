@@ -80,3 +80,9 @@ container = "std::vector"
     [[member.Entry]]
     name = "country"
     type = "std::string"
+    [[member.Entry]]
+    name = "point"
+    type = "uint16_t"
+    [[member.Entry]]
+    name = "wins"
+    type = "uint8_t"

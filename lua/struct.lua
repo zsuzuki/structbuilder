@@ -17,15 +17,15 @@ print "Top10:"
 for r = 1,10 do
     print(r,"=",gTest.ranking[r])
 end
+-- local e = TestEntry.new()
+-- e.name = "K. Yamada"
+-- e.country = "JP"
+-- table.insert(gTest.entry_list,e)
 print("EntryList:",#gTest.entry_list)
 for ei, ev in ipairs(gTest.entry_list) do
-    local m = string.format( "    [%i]: %s(%s)",ei,ev.name,ev.country)
+    local m = string.format("    [%i]: %s(%s): %d pts,%d wins",ei,ev.name,ev.country,ev.point,ev.wins)
     print(m)
 end
--- local e = TestEntry.new()
--- e.name = "B. Glow"
--- e.country = "UK"
--- table.insert(gTest.entry_list,e)
-print(args[1])
 print(Test.BeerType.Lambic)
+print(args[1])
 print "Good bye LUA"

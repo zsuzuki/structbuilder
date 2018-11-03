@@ -17,6 +17,7 @@ import (
 
 var (
 	enableFormat bool
+	wd           string
 	myName       = ""
 	objName      = []string{}
 	tmplPushStr  = []string{}
@@ -66,7 +67,7 @@ var (
 func outputTemplateFile(data interface{}, name string, tempname []string) error {
 	fl := []string{}
 	for _, tn := range tempname {
-		fl = append(fl, filepath.Join("templates", tn))
+		fl = append(fl, filepath.Join(wd, "templates", tn))
 	}
 	tmpl, err := template.New(filepath.Base(fl[0])).Funcs(tmplFuncs).ParseFiles(fl...)
 	if err != nil {
@@ -117,6 +118,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "TOML read error:", intpuFile)
 		os.Exit(1)
 	}
+	wd = filepath.Dir(os.Args[0])
 
 	if *ser {
 		// serializer
