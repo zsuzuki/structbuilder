@@ -89,6 +89,7 @@ type GlobalInfo struct {
 	HeaderGlobalJ bool
 	UseLua        bool
 	TopStruct     StructInfo
+	BinVersion    int64
 }
 
 // build string list from toml attribute
@@ -246,6 +247,7 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string) (Glo
 		HeaderGlobalB: false,
 		HeaderGlobalJ: false,
 		UseLua:        false,
+		BinVersion:    0,
 	}
 	fullHpp, _ := filepath.Abs(hpp)
 	hppPath := filepath.Dir(fullHpp)
@@ -289,6 +291,10 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string) (Glo
 	ser := tomlConfig.Get("serializer")
 	if ser != nil {
 		topStruct.Serializer = ser.(string)
+		bv := tomlConfig.Get("binary_version")
+		if bv != nil {
+			gInfo.BinVersion = bv.(int64)
+		}
 	}
 	serJ := tomlConfig.Get("serializer_json")
 	if serJ != nil {

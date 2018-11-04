@@ -1,5 +1,10 @@
 -- test
 print(string.format("Hello LUA(%s)",ExecuteFilename))
+if InitializedTest then
+    print("Initialized Struct by JSON")
+else
+    print("Not Initialized Struct")
+end
 print(string.format("Count: %d",gTest.count))
 if #args > 0 then
     print("Args:")

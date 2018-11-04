@@ -2,12 +2,10 @@ namespace = "Sample"
 local_include = ["serializer.hpp"]
 include = ["cstdint","vector","string","array","nlohmann/json.hpp"]
 struct_name = "Test"
-comment = """
-Test class
-"""
 
 serializer_json = "nlohmann::json"
 serializer = "Serializer"
+binary_version = 100
 lua = true
 
 [[member]]

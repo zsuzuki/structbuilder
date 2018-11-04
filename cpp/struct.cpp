@@ -11,11 +11,16 @@ using json = nlohmann::json;
 
 int main(int argc, char **argv) {
   Sample::Test test;
+  bool load_json = false;
   {
     std::ifstream ifile("save.json");
-    json ij;
-    ifile >> ij;
-    test.deserializeJSON(ij);
+    if (ifile.good())
+    {
+      json ij;
+      ifile >> ij;
+      test.deserializeJSON(ij);
+      load_json = true;
+    }
   }
   test.setCount(test.getCount() + 1);
 
@@ -41,6 +46,7 @@ int main(int argc, char **argv) {
     }
   }
   lua["ExecuteFilename"] = lua_file;
+  lua["InitializedTest"] = load_json;
   lua["args"] = args;
   lua["gTest"] = &test;
   try {

@@ -158,6 +158,13 @@ func main() {
 				os.Exit(1)
 			}
 		}
+		if gInfo.TopStruct.Serializer != "" {
+			err = outputTemplateFile(gInfo, *serFile, []string{"struct_ser.tpl"})
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+		}
 		if gInfo.UseLua {
 			err = outputTemplateFile(gInfo, *luaFile, []string{"luasol.tpl", "luasol_child.tpl"})
 			if err != nil {
