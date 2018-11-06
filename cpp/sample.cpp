@@ -47,6 +47,12 @@ int main(int argc, char **argv) {
     }
     std::cout << "get string done: " << ser.getReadSize() << " bytes"
               << std::endl;
+    ser.reset();
+    std::string msg1 = "String Method", msg2 = "Serializer";
+    std::cout << "MSG1: " << msg1 << ", MSG2: " << msg2 << ", size: " << msg1.size() << std::endl;
+    ser.put(msg1);
+    ser.get(msg2);
+    std::cout << "MSG1: " << msg1 << ", MSG2: " << msg2 << ", size: " << ser.getWriteSize() << std::endl;
 
     //
     // bit field

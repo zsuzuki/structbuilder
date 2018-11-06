@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
+# struct builder test program
 project(struct CXX)
 set(CMAKE_CXX_FLAGS "-std=c++14 -Wall")
 
@@ -20,3 +21,8 @@ target_link_libraries(struct lua dl)
  
 add_custom_target(generate_struct DEPENDS ${PROJECT_SOURCE_DIR}/cpp/struct.hpp)
 add_dependencies(struct generate_struct)
+
+# serializer test program
+project(sample CXX)
+set(CMAKE_CXX_FLAGS "-std=c++14 -Wall")
+add_executable(sample cpp/sample.cpp)

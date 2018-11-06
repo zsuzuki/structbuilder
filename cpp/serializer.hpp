@@ -173,6 +173,17 @@ public:
     std::memcpy(v.data(), r.first, sizeof(T) * r.second);
   }
 
+  // string
+  void put(std::string& str)
+  {
+    putBuffer<char, uint16_t>(str.data(),str.size());
+  }
+  void get(std::string& str)
+  {
+    auto r = getBuffer<char, uint16_t>();
+    str = std::string{r.first, r.second};
+  }
+
   // version
   void putVersion(uint16_t v) { put(v); }
   uint16_t getVersion(const char *mod, uint16_t need) {
