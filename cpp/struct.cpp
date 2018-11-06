@@ -3,6 +3,7 @@
 //
 
 #include "struct.hpp"
+#include "serializer.hpp"
 #include <fstream>
 #include <iostream>
 #include <sol/sol.hpp>
@@ -14,8 +15,7 @@ int main(int argc, char **argv) {
   bool load_json = false;
   {
     std::ifstream ifile("save.json");
-    if (ifile.good())
-    {
+    if (ifile.good()) {
       json ij;
       ifile >> ij;
       test.deserializeJSON(ij);
@@ -32,12 +32,10 @@ int main(int argc, char **argv) {
   std::string lua_file = "lua/struct.lua";
   std::vector<std::string> args;
   bool skip = false;
-  for (int i = 1; i < argc; i++)
-  {
+  for (int i = 1; i < argc; i++) {
     std::string a{argv[i]};
-    if (a == "-lua" && i + 1 < argc)
-    {
-      lua_file = argv[i+1];
+    if (a == "-lua" && i + 1 < argc) {
+      lua_file = argv[i + 1];
       skip = true;
     } else {
       if (!skip)
@@ -51,9 +49,18 @@ int main(int argc, char **argv) {
   lua["gTest"] = &test;
   try {
     lua.script_file(lua_file);
-  } catch (std::exception& e) {
+  } catch (std::exception &e) {
     std::cerr << e.what() << std::endl;
     return 1;
+  }
+
+  {
+    Serializer ser;
+    uint8_t buffer[1024];
+    ser.initialize(buffer, sizeof(buffer));
+    test.serialize(ser);
+    std::cout << "Binary Size: " << test.getSerializeSize() << "/"
+              << ser.getWriteSize() << std::endl;
   }
 
   {

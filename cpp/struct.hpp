@@ -104,6 +104,7 @@ public:
   //
   void serialize(Serializer& ser);
   void deserialize(Serializer& ser);
+  size_t getSerializeSize() const;
   //
   void serializeJSON(nlohmann::json& json);
   void deserializeJSON(nlohmann::json& json);

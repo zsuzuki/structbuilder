@@ -13,7 +13,7 @@ namespace {
 {{$StructName := .TopStruct.Name}}
 //
 size_t {{$StructName}}::getSerializeSize() const {
-    size_t r = sizeof(uint16_t);
+    size_t r = sizeof({{.TopStruct.Serializer}}::version_t);
 {{template "serialize_size" .TopStruct}}
     return r;
 }

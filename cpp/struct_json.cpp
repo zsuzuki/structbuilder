@@ -83,14 +83,16 @@ void Test::deserializeJSON(json& j) {
     max_speed = jsonReader["max_speed"];
     }
     if (!jsonReader["ranking"].is_null()) {
-    json jRanking = jsonReader["ranking"];ranking.reserve(jRanking.size());
+    json jRanking = jsonReader["ranking"];
+    ranking.reserve(jRanking.size());
     ranking.resize(0);
     for (auto& jRankingIt : jRanking) {
         ranking.push_back(jRankingIt);
     }
     }
     if (!jsonReader["line"].is_null()) {
-    json jLine = jsonReader["line"];line.reserve(jLine.size());
+    json jLine = jsonReader["line"];
+    line.reserve(jLine.size());
     line.resize(0);
     for (auto& jLineIt : jLine) {
         line.push_back(jLineIt);
@@ -121,7 +123,8 @@ void Test::deserializeJSON(json& j) {
     }
     }
     if (!jsonReader["entry_list"].is_null()) {
-    json jEntryList = jsonReader["entry_list"];entry_list.reserve(jEntryList.size());
+    json jEntryList = jsonReader["entry_list"];
+    entry_list.reserve(jEntryList.size());
     entry_list.resize(0);
     for (auto& jEntryListIt : jEntryList) {Entry tObj{};
     if (!jEntryListIt["name"].is_null()) {

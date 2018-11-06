@@ -101,6 +101,7 @@ func main() {
 	sjsonFile := flag.String("json", "", "output c++ source filename(json serializer)")
 	serFile := flag.String("serialize", "", "output c++ source filename(serializer)")
 	luaFile := flag.String("lua", "", "output lua interface c++ source filename")
+	tmplDir := flag.String("template", "", "template files directory")
 	flag.BoolVar(&enableFormat, "format", false, "use clang-format")
 	indentStep := flag.Int("indent", 4, "indent step")
 	flag.Parse()
@@ -118,7 +119,11 @@ func main() {
 		fmt.Fprintln(os.Stderr, "TOML read error:", intpuFile)
 		os.Exit(1)
 	}
-	wd = filepath.Dir(os.Args[0])
+	if len(*tmplDir) > 0 {
+		wd = *tmplDir
+	} else {
+		wd = filepath.Dir(os.Args[0])
+	}
 
 	if *ser {
 		// serializer

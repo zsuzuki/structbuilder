@@ -14,8 +14,10 @@
 {{- else}}
 {{- if .HasChild}}
 {{setMyName .Name}}{{template "serialize" .Child}}{{clearMyName}}
+{{- else if eq .Type "std::string"}}
+    ser.put({{myName}}{{.Name}});
 {{- else}}
-    {{myName}}{{.Name}} = ser.put<{{.Type}}>();
+    ser.put<{{.Type}}>({{myName}}{{.Name}});
 {{- end}}
 {{- end}}
 {{- end}}{{end}}{{- end}}

@@ -1,5 +1,5 @@
 {{- define "serialize_size"}}
-{{- if .BitField}}    r += sizeof({{myName}}bit_field);{{end}}
+{{- if .BitField}}    r += sizeof(uint16_t) + sizeof({{myName}}bit_field);{{end}}
 {{- with .Members}}{{range .}}
 {{- if .Container}}
 {{- if .HasChild}}

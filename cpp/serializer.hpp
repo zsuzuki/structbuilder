@@ -71,6 +71,8 @@ public:
   Serializer() = default;
   ~Serializer() = default;
 
+  using version_t = uint16_t;
+
   void initialize(void *b, size_t bs) {
     buffer = b;
     buffer_size = bs;
@@ -103,7 +105,7 @@ public:
   }
 
   // buffer
-  template <class T = char, typename TS = size_t>
+  template <class T = char, typename TS = uint16_t>
   void putBuffer(const T *source_buffer, TS write_size) {
     auto total_size = sizeof(T) * write_size;
     auto overall_size = total_size + sizeof(TS);
@@ -117,7 +119,7 @@ public:
     w_pointer = next_ptr;
   }
   //
-  template <class T = char, typename TS = size_t>
+  template <class T = char, typename TS = uint16_t>
   std::pair<const T *, TS> getBuffer() {
     auto next_ptr = get_next_pointer(sizeof(TS), false, Type::Buffer);
     auto size_ptr = get_read_pointer<TS>();
@@ -162,32 +164,30 @@ public:
   }
 
   // vector
-  template <class T, typename TS = size_t>
+  template <class T, typename TS = uint16_t>
   void putVector(const std::vector<T> &v) {
     putBuffer<T, TS>(v.data(), v.size());
   }
   //
-  template <class T, typename TS = size_t> void getVector(std::vector<T> &v) {
+  template <class T, typename TS = uint16_t> void getVector(std::vector<T> &v) {
     auto r = getBuffer<T, TS>();
     v.resize(r.second);
     std::memcpy(v.data(), r.first, sizeof(T) * r.second);
   }
 
   // string
-  void put(std::string& str)
-  {
-    putBuffer<char, uint16_t>(str.data(),str.size());
+  void put(std::string &str) {
+    putBuffer<char, uint16_t>(str.data(), str.size());
   }
-  void get(std::string& str)
-  {
+  void get(std::string &str) {
     auto r = getBuffer<char, uint16_t>();
     str = std::string{r.first, r.second};
   }
 
   // version
-  void putVersion(uint16_t v) { put(v); }
-  uint16_t getVersion(const char *mod, uint16_t need) {
-    auto v = get<uint16_t>();
+  void putVersion(version_t v) { put(v); }
+  version_t getVersion(const char *mod, version_t need) {
+    auto v = get<version_t>();
     if (v <= need) {
       throw Exception(mod, need, v);
     }
