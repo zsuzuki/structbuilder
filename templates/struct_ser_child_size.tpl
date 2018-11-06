@@ -3,7 +3,7 @@
 {{- with .Members}}{{range .}}
 {{- if .Container}}
 {{- if .HasChild}}
-    r += sizeof(uint16_t);{{$cn := printf "t%s" .CapName}}
+    r += sizeof(uint16_t);{{$cn := printf "t%s" .Type}}
     for (auto& {{$cn}} : {{myName}}{{.Name}}) {
 {{- setMyName $cn}}{{template "serialize_size" .Child}}{{clearMyName}}
     }
