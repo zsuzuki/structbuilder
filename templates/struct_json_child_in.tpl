@@ -14,7 +14,7 @@
     json {{$jn}} = {{getObj}}{{getStr}}["{{.Name}}"];
 {{- if .IsStatic}}
     int {{$jn}}Index = 0;
-{{- else -}}
+{{- else}}
     {{.Name}}.reserve({{$jn}}.size());
     {{.Name}}.resize(0);
 {{- end}}

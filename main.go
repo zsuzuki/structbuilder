@@ -159,7 +159,7 @@ func main() {
 			}
 		}
 		if gInfo.TopStruct.Serializer != "" {
-			err = outputTemplateFile(gInfo, *serFile, []string{"struct_ser.tpl"})
+			err = outputTemplateFile(gInfo, *serFile, []string{"struct_ser.tpl", "struct_ser_child_out.tpl", "struct_ser_child_in.tpl", "struct_ser_child_size.tpl"})
 			if err != nil {
 				fmt.Println(err.Error())
 				os.Exit(1)

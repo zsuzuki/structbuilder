@@ -50,7 +50,8 @@ public:{{end -}}
 {{- if .Serializer}}
   //
   void serialize({{.Serializer}}& ser);
-  void deserialize({{.Serializer}}& ser);{{end}}
+  void deserialize({{.Serializer}}& ser);
+  size_t getSerializeSize() const;{{end}}
 {{- if .SJson}}
   //
   void serializeJSON({{.SJson}}& json);
