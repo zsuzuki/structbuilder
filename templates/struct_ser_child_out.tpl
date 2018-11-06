@@ -5,7 +5,7 @@
 {{- if .HasChild}}
     ser.put<uint16_t>({{myName}}{{.Name}}.size());
 {{- $mn := printf "t%s" .Type}}
-    for (auto& {{$mn}} : {{.Name}}) {
+    for (auto& {{$mn}} : {{myName}}{{.Name}}) {
 {{- setMyName $mn}}{{template "serialize" .Child}}{{clearMyName}}
     }
 {{- else}}

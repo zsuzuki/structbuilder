@@ -65,9 +65,13 @@ void Test::deserialize(Serializer& ser) {
     max_speed = ser.get<uint32_t>();
     ser.getVector<uint8_t>(ranking);
     ser.getVector<float>(line);
-    for (auto& tNote : note) {
+    auto tNoteSize = ser.get<uint16_t>();
+    for (size_t cNote = 0; cNote < tNoteSize; cNote++) {
+        Note tNote{};
     tNote.page = ser.get<int>();
     tNote.line = ser.get<int>();
+    if (cNote < 4)
+        note[cNote] = tNote;
     }
     ser.getStruct(child.bit_field);
     ser.get(child.name);

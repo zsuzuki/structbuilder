@@ -61,6 +61,12 @@ int main(int argc, char **argv) {
     test.serialize(ser);
     std::cout << "Binary Size: " << test.getSerializeSize() << "/"
               << ser.getWriteSize() << std::endl;
+    Sample::Test test2;
+    test2.deserialize(ser);
+    json j;
+    test2.serializeJSON(j);
+    std::ofstream ofile{"save2.json"};
+    ofile << j;
   }
 
   {

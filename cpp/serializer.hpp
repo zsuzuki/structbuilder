@@ -181,14 +181,17 @@ public:
   }
   void get(std::string &str) {
     auto r = getBuffer<char, uint16_t>();
-    str = std::string{r.first, r.second};
+    if (r.second > 0)
+      str = std::string{r.first, r.second};
+    else
+      str = "";
   }
 
   // version
   void putVersion(version_t v) { put(v); }
   version_t getVersion(const char *mod, version_t need) {
     auto v = get<version_t>();
-    if (v <= need) {
+    if (v < need) {
       throw Exception(mod, need, v);
     }
     return v;
