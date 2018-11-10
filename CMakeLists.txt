@@ -30,6 +30,9 @@ add_custom_command (
     ${PROJECT_SOURCE_DIR}/templates/luasol.tpl
     ${PROJECT_SOURCE_DIR}/templates/luasol_child.tpl
     ${PROJECT_SOURCE_DIR}/templates/struct_hpp.tpl
+    ${PROJECT_SOURCE_DIR}/makestruct/struct.go
+    ${PROJECT_SOURCE_DIR}/serialize/serialize.go
+    ${PROJECT_SOURCE_DIR}/main.go
 )
 
 add_executable(struct cpp/struct.cpp cpp/struct_json.cpp cpp/struct_lua.cpp cpp/struct_ser.cpp)

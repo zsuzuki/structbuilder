@@ -12,25 +12,31 @@ lua = true
 name = "index"
 type = "bit-unsigned"
 bits = 5
+initial = 10
 [[member]]
 name = "beer_type"
 type = "bit-enum"
 cast = "BeerType"
 bits = 5
 enum = ["Ales","Larger","Pilsner","Lambic","IPA"]
+initial = "IPA"
 [[member]]
 name = "generation"
 type = "bit-signed"
 bits = 3
+initial = 0
 [[member]]
 name = "enabled"
 type = "bit-bool"
+initial = false
 [[member]]
 name = "count"
 type = "int"
+initial = 0
 [[member]]
 name = "max_speed"
 type = "uint32_t"
+initial = 320
 [[member]]
 name = "ranking"
 type = "uint8_t"
@@ -49,25 +55,30 @@ reserve = 4
     [[member.Note]]
     name = "page"
     type = "int"
+    initial = 0
     [[member.Note]]
     name = "line"
     type = "int"
+    initial = 0
 [[member]]
 name = "child"
 type = "Child"
     [[member.Child]]
     name = "name"
     type = "std::string"
+    initial = "father"
     [[member.Child]]
     name = "age"
     type = "bit-unsigned"
     bits = 6
     offset = 18
+    initial = 50
     [[member.Child]]
     name = "step"
     type = "bit-unsigned"
     bits = 4
     scale = 5
+    initial = 20
 [[member]]
 name = "entry_list"
 type = "Entry"

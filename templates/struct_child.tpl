@@ -29,7 +29,7 @@ protected:{{end -}}
 {{- end}}
   // members
 {{- range .Members}}
-{{- if .Container}}
+{{- if .Container }}
   {{- if .IsStatic}}
   {{.Container}}<{{.Type}}, {{.Size}}> {{.Name}};
   {{- else}}
@@ -41,11 +41,13 @@ protected:{{end -}}
 {{- end}}
 {{- if .IsClass}}
 public:{{end -}}
-{{- if .ReserveList}}
+{{- if or .ReserveList .InitialList}}
   // constructor
   {{.Name}}() {
 {{- range .ReserveList}}
     {{.Name}}.resize({{.Size}});{{end}}
+{{- range .InitialList}}
+    set{{.CapName}}({{.Value}});{{end}}
   }{{end}}
 {{- if .Serializer}}
   //

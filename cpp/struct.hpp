@@ -27,6 +27,11 @@ struct Note {
   // members
   int page;
   int line;
+  // constructor
+  Note() {
+    setPage(0);
+    setLine(0);
+  }
   // interface
   //
   const int getPage() const { return page; }
@@ -45,6 +50,12 @@ struct Child {
   BitField bit_field;
   // members
   std::string name;
+  // constructor
+  Child() {
+    setName("father");
+    setAge(50);
+    setStep(20);
+  }
   // interface
   //
   unsigned getAge() const { return bit_field.age * 1 + 18; }
@@ -100,6 +111,12 @@ public:
   Test() {
     ranking.resize(32);
     line.resize(8);
+    setIndex(10);
+    setBeerType(BeerType::IPA);
+    setGeneration(0);
+    setEnabled(false);
+    setCount(0);
+    setMaxSpeed(320);
   }
   //
   void serialize(Serializer& ser);

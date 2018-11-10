@@ -1,6 +1,7 @@
 package makestruct
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -64,6 +65,13 @@ type EnumInfo struct {
 	List       []string
 }
 
+// Initial value is member initialize in constructor
+type Initial struct {
+	Name    string
+	CapName string
+	Value   string
+}
+
 // StructInfo output struct information
 type StructInfo struct {
 	Name        string
@@ -73,6 +81,7 @@ type StructInfo struct {
 	Members     []Member
 	ReserveList []Reserve
 	EnumList    []EnumInfo
+	InitialList []Initial
 	Serializer  string
 	SJson       string
 	UseLua      bool
@@ -114,6 +123,20 @@ func getInt(tomlConfig *toml.Tree, attr string, number int64) int64 {
 	return number
 }
 
+//
+func getInitial(value interface{}, typeStr string, castType string) string {
+	if len(castType) > 0 {
+		return fmt.Sprintf("%s::%s", castType, value.(string))
+	}
+	switch v := value.(type) {
+	case string:
+		return fmt.Sprintf("\"%v\"", v)
+	default:
+		return fmt.Sprintf("%v", v)
+	}
+	return ""
+}
+
 // parse struct
 //
 func parseStruct(members []*toml.Tree, sname string) (StructInfo, error) {
@@ -123,6 +146,7 @@ func parseStruct(members []*toml.Tree, sname string) (StructInfo, error) {
 		ChildStruct: []StructInfo{},
 		Members:     []Member{},
 		ReserveList: []Reserve{},
+		InitialList: []Initial{},
 		IsClass:     false,
 		UseLua:      false,
 	}
@@ -164,6 +188,15 @@ func parseStruct(members []*toml.Tree, sname string) (StructInfo, error) {
 				Cast:     castType,
 			}
 			sInfo.BitField = append(sInfo.BitField, bf)
+			ini := m.Get("initial")
+			if ini != nil {
+				iv := getInitial(ini, typeStr, castType)
+				sInfo.InitialList = append(sInfo.InitialList, Initial{
+					Name:    "bit_field." + bf.Name,
+					CapName: bf.CapName,
+					Value:   iv,
+				})
+			}
 		} else {
 			mm := Member{
 				Name:      name.(string),
@@ -216,6 +249,16 @@ func parseStruct(members []*toml.Tree, sname string) (StructInfo, error) {
 				mm.Ref = "&"
 				mm.HasChild = true
 				mm.Child = &cS
+			} else {
+				ini := m.Get("initial")
+				if ini != nil {
+					iv := getInitial(ini, typeStr, "")
+					sInfo.InitialList = append(sInfo.InitialList, Initial{
+						Name:    mm.Name,
+						CapName: mm.CapName,
+						Value:   iv,
+					})
+				}
 			}
 			sInfo.Members = append(sInfo.Members, mm)
 		}
