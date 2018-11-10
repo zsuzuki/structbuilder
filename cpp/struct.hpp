@@ -17,7 +17,11 @@ namespace Sample {
 class Test {
 public:
   enum class BeerType : uint8_t {
-    Ales,    Larger,    Pilsner,    Lambic,    IPA,
+    Ales,
+    Larger,
+    Pilsner,
+    Lambic,
+    IPA,
   };
 
   // child class

@@ -6,7 +6,8 @@ public:{{end -}}
 {{- with .EnumList}}
 {{- range .}}
   enum class {{.Name}} : uint8_t {
-{{range .List}}    {{.}},{{end}}
+{{- range .List}}
+    {{.}},{{end}}
   };
 {{- end}}
 {{end}}
