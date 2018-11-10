@@ -64,7 +64,7 @@ struct Child {
   unsigned getStep() const { return bit_field.step * 5 + 0; }
   void setStep(unsigned n) { bit_field.step = (n - 0) / 5; }
   //
-  const std::string getName() const { return name; }
+  const std::string& getName() const { return name; }
   void setName(std::string n) { name = n; }
 };
 
@@ -77,10 +77,10 @@ struct Entry {
   uint8_t wins;
   // interface
   //
-  const std::string getName() const { return name; }
+  const std::string& getName() const { return name; }
   void setName(std::string n) { name = n; }
   //
-  const std::string getCountry() const { return country; }
+  const std::string& getCountry() const { return country; }
   void setCountry(std::string n) { country = n; }
   //
   const uint16_t getPoint() const { return point; }

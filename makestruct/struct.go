@@ -45,6 +45,7 @@ type Member struct {
 	Type      string
 	Container string
 	Ref       string
+	GetRef    string
 	IsStatic  bool
 	Size      int64
 	HasChild  bool
@@ -204,6 +205,7 @@ func parseStruct(members []*toml.Tree, sname string) (StructInfo, error) {
 				Type:      typeStr,
 				Container: "",
 				Ref:       "",
+				GetRef:    "",
 				IsStatic:  false,
 				Size:      1,
 				HasChild:  false,
@@ -258,6 +260,9 @@ func parseStruct(members []*toml.Tree, sname string) (StructInfo, error) {
 						CapName: mm.CapName,
 						Value:   iv,
 					})
+				}
+				if typeStr == "std::string" {
+					mm.GetRef = "&"
 				}
 			}
 			sInfo.Members = append(sInfo.Members, mm)

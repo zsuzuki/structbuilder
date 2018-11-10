@@ -92,7 +92,7 @@ public:{{end -}}
   {{- end}}
 {{- else}}
   //
-  const {{.Type}}{{.Ref}} get{{.CapName}}() const { return {{.Name}}; }
+  const {{.Type}}{{.Ref}}{{.GetRef}} get{{.CapName}}() const { return {{.Name}}; }
   void set{{.CapName}}({{.Type}}{{.Ref}} n) { {{.Name}} = n; }
 {{- end}}
 {{- end}}
