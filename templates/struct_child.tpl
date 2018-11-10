@@ -50,6 +50,26 @@ public:{{end -}}
 {{- range .InitialList}}
     set{{.CapName}}({{.Value}});{{end}}
   }{{end}}
+{{- if getFlag "Compare"}}
+  //
+  bool operator == (const {{.Name}}& other) const {
+{{- range .BitField}}
+    if (bit_field.{{.Name}} != other.bit_field.{{.Name}}) return false;{{end}}
+{{- range .Members}}
+{{- if .Container}}
+  {{- if not .IsStatic}}
+    if ({{.Name}}.size() != other.{{.Name}}.size()) return false;{{end}}
+    for (size_t i = 0; i < {{.Name}}.size(); i++)
+    {
+      if ({{.Name}}[i] != other.{{.Name}}[i]) return false;
+    }
+{{- else}}
+    if ({{.Name}} != other.{{.Name}}) return false;{{end}}{{end}}
+    return true;
+  }
+  bool operator != (const {{.Name}}& other) const {
+    return !(*this == other);
+  }{{end}}
 {{- if .Serializer}}
   //
   void serialize({{.Serializer}}& ser);

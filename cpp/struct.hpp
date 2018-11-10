@@ -36,6 +36,15 @@ struct Note {
     setPage(0);
     setLine(0);
   }
+  //
+  bool operator == (const Note& other) const {
+    if (page != other.page) return false;
+    if (line != other.line) return false;
+    return true;
+  }
+  bool operator != (const Note& other) const {
+    return !(*this == other);
+  }
   // interface
   //
   const int getPage() const { return page; }
@@ -60,6 +69,16 @@ struct Child {
     setAge(50);
     setStep(20);
   }
+  //
+  bool operator == (const Child& other) const {
+    if (bit_field.age != other.bit_field.age) return false;
+    if (bit_field.step != other.bit_field.step) return false;
+    if (name != other.name) return false;
+    return true;
+  }
+  bool operator != (const Child& other) const {
+    return !(*this == other);
+  }
   // interface
   //
   unsigned getAge() const { return bit_field.age * 1 + 18; }
@@ -79,6 +98,17 @@ struct Entry {
   std::string country;
   uint16_t point;
   uint8_t wins;
+  //
+  bool operator == (const Entry& other) const {
+    if (name != other.name) return false;
+    if (country != other.country) return false;
+    if (point != other.point) return false;
+    if (wins != other.wins) return false;
+    return true;
+  }
+  bool operator != (const Entry& other) const {
+    return !(*this == other);
+  }
   // interface
   //
   const std::string& getName() const { return name; }
@@ -123,6 +153,39 @@ public:
     setMaxSpeed(320);
   }
   //
+  bool operator == (const Test& other) const {
+    if (bit_field.index != other.bit_field.index) return false;
+    if (bit_field.beer_type != other.bit_field.beer_type) return false;
+    if (bit_field.generation != other.bit_field.generation) return false;
+    if (bit_field.enabled != other.bit_field.enabled) return false;
+    if (count != other.count) return false;
+    if (max_speed != other.max_speed) return false;
+    if (ranking.size() != other.ranking.size()) return false;
+    for (size_t i = 0; i < ranking.size(); i++)
+    {
+      if (ranking[i] != other.ranking[i]) return false;
+    }
+    if (line.size() != other.line.size()) return false;
+    for (size_t i = 0; i < line.size(); i++)
+    {
+      if (line[i] != other.line[i]) return false;
+    }
+    for (size_t i = 0; i < note.size(); i++)
+    {
+      if (note[i] != other.note[i]) return false;
+    }
+    if (child != other.child) return false;
+    if (entry_list.size() != other.entry_list.size()) return false;
+    for (size_t i = 0; i < entry_list.size(); i++)
+    {
+      if (entry_list[i] != other.entry_list[i]) return false;
+    }
+    return true;
+  }
+  bool operator != (const Test& other) const {
+    return !(*this == other);
+  }
+  //
   void serialize(Serializer& ser);
   void deserialize(Serializer& ser);
   size_t getSerializeSize() const;
@@ -130,7 +193,7 @@ public:
   void serializeJSON(nlohmann::json& json);
   void deserializeJSON(nlohmann::json& json);
   //
-  void setLUA(sol::state& lua);
+  static void setLUA(sol::state& lua);
   // interface
   //
   unsigned getIndex() const { return bit_field.index * 1 + 0; }

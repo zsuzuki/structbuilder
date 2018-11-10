@@ -100,6 +100,7 @@ type GlobalInfo struct {
 	UseLua        bool
 	TopStruct     StructInfo
 	BinVersion    int64
+	Compare       bool
 }
 
 // build string list from toml attribute
@@ -135,7 +136,6 @@ func getInitial(value interface{}, typeStr string, castType string) string {
 	default:
 		return fmt.Sprintf("%v", v)
 	}
-	return ""
 }
 
 // parse struct
@@ -296,6 +296,7 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string) (Glo
 		HeaderGlobalJ: false,
 		UseLua:        false,
 		BinVersion:    0,
+		Compare:       false,
 	}
 	fullHpp, _ := filepath.Abs(hpp)
 	hppPath := filepath.Dir(fullHpp)
@@ -351,6 +352,10 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string) (Glo
 	lua := tomlConfig.Get("lua")
 	if lua != nil {
 		gInfo.UseLua = lua.(bool)
+	}
+	cmp := tomlConfig.Get("compare")
+	if cmp != nil {
+		gInfo.Compare = cmp.(bool)
 	}
 	topStruct.UseLua = gInfo.UseLua
 	topStruct.IsClass = true

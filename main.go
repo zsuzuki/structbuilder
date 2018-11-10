@@ -21,6 +21,7 @@ var (
 	myName       = ""
 	objName      = []string{}
 	tmplPushStr  = []string{}
+	flagsList    = map[string]bool{}
 	tmplFuncs    = template.FuncMap{
 		"pushStr": func(str ...string) string {
 			ns := ""
@@ -59,6 +60,13 @@ var (
 		},
 		"getObj": func() string {
 			return objName[len(objName)-1]
+		},
+		"setFlag": func(n string, f bool) string {
+			flagsList[n] = f
+			return ""
+		},
+		"getFlag": func(n string) bool {
+			return flagsList[n]
 		},
 	}
 )

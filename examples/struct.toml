@@ -8,6 +8,8 @@ serializer = "Serializer"
 binary_version = 100
 lua = true
 
+compare = true
+
 [[member]]
 name = "index"
 type = "bit-unsigned"
