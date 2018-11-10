@@ -29,6 +29,7 @@ add_custom_command (
     ${PROJECT_SOURCE_DIR}/templates/struct_ser_child_size.tpl
     ${PROJECT_SOURCE_DIR}/templates/luasol.tpl
     ${PROJECT_SOURCE_DIR}/templates/luasol_child.tpl
+    ${PROJECT_SOURCE_DIR}/templates/struct_child.tpl
     ${PROJECT_SOURCE_DIR}/templates/struct_hpp.tpl
     ${PROJECT_SOURCE_DIR}/makestruct/struct.go
     ${PROJECT_SOURCE_DIR}/serialize/serialize.go
