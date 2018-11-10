@@ -61,7 +61,7 @@ public:{{end -}}
   void deserializeJSON({{.SJson}}& json);{{end}}
 {{- if .UseLua}}
   //
-  void setLUA(sol::state& lua);{{end}}
+  static void setLUA(sol::state& lua);{{end}}
   // interface
 {{- range .BitField}}
 {{- if .IsBool}}
