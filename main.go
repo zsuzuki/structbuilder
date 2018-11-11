@@ -9,8 +9,8 @@ import (
 	"strings"
 	"text/template"
 
-	"./makestruct"
-	"./serialize"
+	"github.com/zsuzuki/structbuilder/makestruct"
+	"github.com/zsuzuki/structbuilder/serialize"
 
 	"github.com/pelletier/go-toml"
 )
