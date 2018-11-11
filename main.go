@@ -132,7 +132,8 @@ func main() {
 	} else {
 		//e, _ := os.Executable()
 		//wd = filepath.Dir(e)
-		wd = "."
+		wd = filepath.Join(os.Getenv("GOPATH"), "src/github.com/zsuzuki/structbuilder")
+		//wd = "."
 	}
 
 	if *ser {
