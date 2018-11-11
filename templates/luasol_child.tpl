@@ -9,7 +9,7 @@
     "{{.Name}}", &{{$sn}}::{{.Name}}
 {{- end}}{{end}}
 {{- if getFlag "Copy"}},
-    "copy", &{{$sn}}::copyFrom
+    "copyFrom", &{{$sn}}::copyFrom
 {{- end}});
 {{- with .EnumList}}{{range .}}{{$tn := printf "t_%s" .Name}}{{$en := .Name}}
   sol::table {{$tn}} = lua.create_table_with();

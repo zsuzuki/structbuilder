@@ -47,15 +47,12 @@ struct Note {
     return !(*this == other);
   }
   //
-  void copy(const Note& other) {
+  void copyFrom(const Note& other) {
     page = other.page;
     line = other.line;
   }
-  void copyFrom(std::shared_ptr<Note> other) {
-    copy(*other);
-  }
   Note& operator=(const Note& other) {
-    copy(other);
+    copyFrom(other);
     return *this;
   }
   // interface
@@ -93,16 +90,13 @@ struct Child {
     return !(*this == other);
   }
   //
-  void copy(const Child& other) {
+  void copyFrom(const Child& other) {
     bit_field.age = other.bit_field.age;
     bit_field.step = other.bit_field.step;
     name = other.name;
   }
-  void copyFrom(std::shared_ptr<Child> other) {
-    copy(*other);
-  }
   Child& operator=(const Child& other) {
-    copy(other);
+    copyFrom(other);
     return *this;
   }
   // interface
@@ -136,17 +130,14 @@ struct Entry {
     return !(*this == other);
   }
   //
-  void copy(const Entry& other) {
+  void copyFrom(const Entry& other) {
     name = other.name;
     country = other.country;
     point = other.point;
     wins = other.wins;
   }
-  void copyFrom(std::shared_ptr<Entry> other) {
-    copy(*other);
-  }
   Entry& operator=(const Entry& other) {
-    copy(other);
+    copyFrom(other);
     return *this;
   }
   // interface
@@ -226,7 +217,7 @@ public:
     return !(*this == other);
   }
   //
-  void copy(const Test& other) {
+  void copyFrom(const Test& other) {
     bit_field.index = other.bit_field.index;
     bit_field.beer_type = other.bit_field.beer_type;
     bit_field.generation = other.bit_field.generation;
@@ -239,11 +230,8 @@ public:
     child = other.child;
     entry_list = other.entry_list;
   }
-  void copyFrom(std::shared_ptr<Test> other) {
-    copy(*other);
-  }
   Test& operator=(const Test& other) {
-    copy(other);
+    copyFrom(other);
     return *this;
   }
   //
