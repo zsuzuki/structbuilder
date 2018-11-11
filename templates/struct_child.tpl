@@ -73,8 +73,8 @@ public:{{end -}}
 {{- if getFlag "Copy"}}
   //
   void copyFrom(const {{.Name}}& other) {
-{{- range .BitField}}
-    bit_field.{{.Name}} = other.bit_field.{{.Name}};{{end}}
+{{- if .BitField}}
+    bit_field = other.bit_field;{{end}}
 {{- range .Members}}
     {{.Name}} = other.{{.Name}};{{end}}
   }

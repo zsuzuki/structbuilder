@@ -91,8 +91,7 @@ struct Child {
   }
   //
   void copyFrom(const Child& other) {
-    bit_field.age = other.bit_field.age;
-    bit_field.step = other.bit_field.step;
+    bit_field = other.bit_field;
     name = other.name;
   }
   Child& operator=(const Child& other) {
@@ -218,10 +217,7 @@ public:
   }
   //
   void copyFrom(const Test& other) {
-    bit_field.index = other.bit_field.index;
-    bit_field.beer_type = other.bit_field.beer_type;
-    bit_field.generation = other.bit_field.generation;
-    bit_field.enabled = other.bit_field.enabled;
+    bit_field = other.bit_field;
     count = other.count;
     max_speed = other.max_speed;
     ranking = other.ranking;
