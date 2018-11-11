@@ -130,8 +130,9 @@ func main() {
 	if len(*tmplDir) > 0 {
 		wd = *tmplDir
 	} else {
-		e, _ := os.Executable()
-		wd = filepath.Dir(e)
+		//e, _ := os.Executable()
+		//wd = filepath.Dir(e)
+		wd = "."
 	}
 
 	if *ser {
