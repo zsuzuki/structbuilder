@@ -7,7 +7,10 @@
 {{- end}}{{end}}
 {{- with .Members}}{{range .}},
     "{{.Name}}", &{{$sn}}::{{.Name}}
-{{- end}}{{end}});
+{{- end}}{{end}}
+{{- if getFlag "Copy"}},
+    "copy", &{{$sn}}::copyFrom
+{{- end}});
 {{- with .EnumList}}{{range .}}{{$tn := printf "t_%s" .Name}}{{$en := .Name}}
   sol::table {{$tn}} = lua.create_table_with();
 {{- range .List}}

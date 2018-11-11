@@ -70,6 +70,21 @@ public:{{end -}}
   bool operator != (const {{.Name}}& other) const {
     return !(*this == other);
   }{{end}}
+{{- if getFlag "Copy"}}
+  //
+  void copy(const {{.Name}}& other) {
+{{- range .BitField}}
+    bit_field.{{.Name}} = other.bit_field.{{.Name}};{{end}}
+{{- range .Members}}
+    {{.Name}} = other.{{.Name}};{{end}}
+  }
+  void copyFrom(std::shared_ptr<{{.Name}}> other) {
+    copy(*other);
+  }
+  {{.Name}}& operator=(const {{.Name}}& other) {
+    copy(other);
+    return *this;
+  }{{end}}
 {{- if .Serializer}}
   //
   void serialize({{.Serializer}}& ser);

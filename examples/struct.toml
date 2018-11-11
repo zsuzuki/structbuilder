@@ -1,6 +1,6 @@
 namespace = "Sample"
 local_include = ["serializer.hpp"]
-include = ["cstdint","vector","string","array","nlohmann/json.hpp"]
+include = ["cstdint","vector","string","array","nlohmann/json.hpp","memory"]
 struct_name = "Test"
 
 serializer_json = "nlohmann::json"
@@ -9,6 +9,7 @@ binary_version = 100
 lua = true
 
 compare = true
+copy = true
 
 [[member]]
 name = "index"

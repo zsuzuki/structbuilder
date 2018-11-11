@@ -45,4 +45,17 @@ for ei, ev in ipairs(gTest.entry_list) do
     local m = string.format("    [%i]: %-16s(%s): %3d pts,%d wins", ei, ev.name, ev.country, ev.point, ev.wins)
     print(m)
 end
+test = Test.new()
+test.copy(gTest)
+if test == gTest then
+    print(string.format("Eq %d/%d", test.child.age, gTest.child.age))
+else
+    print(string.format("Ne %d/%d", test.child.age, gTest.child.age))
+end
+test.child.age = test.child.age - 1
+if test == gTest then
+    print(string.format("Eq %d/%d", test.child.age, gTest.child.age))
+else
+    print(string.format("Ne %d/%d", test.child.age, gTest.child.age))
+end
 print "Good bye LUA"

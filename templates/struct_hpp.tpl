@@ -12,5 +12,6 @@
 {{- if .UseLua}}#include <sol/sol.hpp>{{end}}
 {{if .NameSpace}}namespace {{.NameSpace}} {
 {{- end}}
-{{setFlag "Compare" .Compare}}{{template "struct_base" .TopStruct}}
+{{- setFlag "Compare" .Compare}}{{setFlag "Copy" .Copy}}
+{{template "struct_base" .TopStruct}}
 {{if .NameSpace}}} // namespace {{.NameSpace}}{{end}}

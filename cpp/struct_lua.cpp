@@ -13,18 +13,21 @@ void Test::setLUA(sol::state& lua)
   lua.new_usertype<Note>(
     "TestNote",
     "page", &Note::page,
-    "line", &Note::line);
+    "line", &Note::line,
+    "copy", &Note::copyFrom);
   lua.new_usertype<Child>(
     "TestChild",
     "age", sol::property(&Child::getAge, &Child::setAge),
     "step", sol::property(&Child::getStep, &Child::setStep),
-    "name", &Child::name);
+    "name", &Child::name,
+    "copy", &Child::copyFrom);
   lua.new_usertype<Entry>(
     "TestEntry",
     "name", &Entry::name,
     "country", &Entry::country,
     "point", &Entry::point,
-    "wins", &Entry::wins);
+    "wins", &Entry::wins,
+    "copy", &Entry::copyFrom);
   lua.new_usertype<Test>(
     "Test",
     "index", sol::property(&Test::getIndex, &Test::setIndex),
@@ -37,7 +40,8 @@ void Test::setLUA(sol::state& lua)
     "line", &Test::line,
     "note", &Test::note,
     "child", &Test::child,
-    "entry_list", &Test::entry_list);
+    "entry_list", &Test::entry_list,
+    "copy", &Test::copyFrom);
   sol::table t_BeerType = lua.create_table_with();
   t_BeerType["Ales"] = (int)BeerType::Ales;
   t_BeerType["Larger"] = (int)BeerType::Larger;

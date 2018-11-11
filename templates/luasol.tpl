@@ -13,6 +13,7 @@
 {{- end}}
 void {{.TopStruct.Name}}::setLUA(sol::state& lua)
 {
+{{- setFlag "Compare" .Compare}}{{setFlag "Copy" .Copy}}
 {{- template "luasol_child" .TopStruct}}
 }
 

@@ -101,6 +101,7 @@ type GlobalInfo struct {
 	TopStruct     StructInfo
 	BinVersion    int64
 	Compare       bool
+	Copy          bool
 }
 
 // build string list from toml attribute
@@ -356,6 +357,10 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string) (Glo
 	cmp := tomlConfig.Get("compare")
 	if cmp != nil {
 		gInfo.Compare = cmp.(bool)
+	}
+	cp := tomlConfig.Get("copy")
+	if cp != nil {
+		gInfo.Copy = cp.(bool)
 	}
 	topStruct.UseLua = gInfo.UseLua
 	topStruct.IsClass = true
