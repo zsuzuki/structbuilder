@@ -97,6 +97,8 @@ type GlobalInfo struct {
 	HeaderGlobalB bool
 	HeaderNameJ   string
 	HeaderGlobalJ bool
+	HeaderNameL   string
+	HeaderGlobalL bool
 	UseLua        bool
 	TopStruct     StructInfo
 	BinVersion    int64
@@ -284,17 +286,32 @@ func checkRelPath(basePath string, targetPath string) (string, bool) {
 	return "", false
 }
 
+//
+func getHeaderPath(p string, hpp string) (string, bool) {
+	fullPath, _ := filepath.Abs(p)
+	basePath := filepath.Dir(fullPath)
+	rp, ex := checkRelPath(hpp, basePath)
+	if ex {
+		rp = filepath.Join(rp, filepath.Base(hpp))
+	} else {
+		rp = filepath.Base(hpp)
+	}
+	return rp, ex
+}
+
 // ParseToml setup serialize code information by toml
 //
-func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string) (GlobalInfo, error) {
+func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string, lua string) (GlobalInfo, error) {
 	gInfo := GlobalInfo{
 		Include:       getStringList(tomlConfig, "include"),
 		LocalInclude:  getStringList(tomlConfig, "local_include"),
 		NameSpace:     tomlConfig.Get("namespace").(string),
 		HeaderNameB:   "",
 		HeaderNameJ:   "",
+		HeaderNameL:   "",
 		HeaderGlobalB: false,
 		HeaderGlobalJ: false,
+		HeaderGlobalL: false,
 		UseLua:        false,
 		BinVersion:    0,
 		Compare:       false,
@@ -302,26 +319,13 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string) (Glo
 	fullHpp, _ := filepath.Abs(hpp)
 	hppPath := filepath.Dir(fullHpp)
 	if bser != "" {
-		fullBinSer, _ := filepath.Abs(bser)
-		bserPath := filepath.Dir(fullBinSer)
-		bP, ex := checkRelPath(hppPath, bserPath)
-		if ex {
-			gInfo.HeaderNameB = filepath.Join(bP, filepath.Base(hpp))
-		} else {
-			gInfo.HeaderNameB = filepath.Base(hpp)
-		}
-		gInfo.HeaderGlobalB = !ex
+		gInfo.HeaderNameB, gInfo.HeaderGlobalB = getHeaderPath(bser, hppPath)
 	}
 	if json != "" {
-		fullPathJs, _ := filepath.Abs(json)
-		jsonPath := filepath.Dir(fullPathJs)
-		jP, ex := checkRelPath(hppPath, jsonPath)
-		if ex {
-			gInfo.HeaderNameJ = filepath.Join(jP, filepath.Base(hpp))
-		} else {
-			gInfo.HeaderNameJ = filepath.Base(hpp)
-		}
-		gInfo.HeaderGlobalJ = !ex
+		gInfo.HeaderNameJ, gInfo.HeaderGlobalJ = getHeaderPath(json, hppPath)
+	}
+	if lua != "" {
+		gInfo.HeaderNameL, gInfo.HeaderGlobalL = getHeaderPath(lua, hppPath)
 	}
 
 	// top level struct
