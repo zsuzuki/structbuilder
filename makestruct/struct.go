@@ -287,21 +287,23 @@ func checkRelPath(basePath string, targetPath string) (string, bool) {
 }
 
 //
-func getHeaderPath(p string, hpp string) (string, bool) {
+func getHeaderPath(p string, hpp string, hppPath string) (string, bool) {
 	fullPath, _ := filepath.Abs(p)
 	basePath := filepath.Dir(fullPath)
-	rp, ex := checkRelPath(hpp, basePath)
+	rp, ex := checkRelPath(hppPath, basePath)
 	if ex {
 		rp = filepath.Join(rp, filepath.Base(hpp))
+		fmt.Printf("Base: %s/%s\n", rp, hpp)
 	} else {
 		rp = filepath.Base(hpp)
+		fmt.Printf("Full: %s/%s\n", rp, hpp)
 	}
-	return rp, ex
+	return rp, !ex
 }
 
 // ParseToml setup serialize code information by toml
 //
-func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string, lua string) (GlobalInfo, error) {
+func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string, luaF string) (GlobalInfo, error) {
 	gInfo := GlobalInfo{
 		Include:       getStringList(tomlConfig, "include"),
 		LocalInclude:  getStringList(tomlConfig, "local_include"),
@@ -319,13 +321,13 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string, lua 
 	fullHpp, _ := filepath.Abs(hpp)
 	hppPath := filepath.Dir(fullHpp)
 	if bser != "" {
-		gInfo.HeaderNameB, gInfo.HeaderGlobalB = getHeaderPath(bser, hppPath)
+		gInfo.HeaderNameB, gInfo.HeaderGlobalB = getHeaderPath(bser, hpp, hppPath)
 	}
 	if json != "" {
-		gInfo.HeaderNameJ, gInfo.HeaderGlobalJ = getHeaderPath(json, hppPath)
+		gInfo.HeaderNameJ, gInfo.HeaderGlobalJ = getHeaderPath(json, hpp, hppPath)
 	}
-	if lua != "" {
-		gInfo.HeaderNameL, gInfo.HeaderGlobalL = getHeaderPath(lua, hppPath)
+	if luaF != "" {
+		gInfo.HeaderNameL, gInfo.HeaderGlobalL = getHeaderPath(luaF, hpp, hppPath)
 	}
 
 	// top level struct

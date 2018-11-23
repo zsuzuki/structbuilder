@@ -156,7 +156,7 @@ func main() {
 			os.Exit(1)
 		}
 	} else {
-		gInfo, err := makestruct.ParseToml(tomlConfig, *hppFile, *serFile, *sjsonFile)
+		gInfo, err := makestruct.ParseToml(tomlConfig, *hppFile, *serFile, *sjsonFile, *luaFile)
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
