@@ -51,6 +51,11 @@ type = "float"
 container = "std::vector"
 reserve = 8
 [[member]]
+name = "line2"
+type = "int32_t"
+container = "std::array"
+reserve = 8
+[[member]]
 name = "note"
 type = "Note"
 container = "std::array"

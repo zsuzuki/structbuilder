@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     }
     std::cout << "put string done: " << ser.getWriteSize() << " bytes"
               << std::endl;
-    for (int i = 0; i < str.size(); i++) {
+    for (size_t i = 0; i < str.size(); i++) {
       auto r = ser.getBuffer<const char, msg_size_t>();
       std::cout << (int)r.second << ": " << r.first << std::endl;
     }

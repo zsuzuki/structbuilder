@@ -8,6 +8,7 @@
 #include <exception>
 #include <string>
 #include <vector>
+#include <array>
 
 //
 class Serializer {
@@ -168,10 +169,19 @@ public:
   void putVector(const std::vector<T> &v) {
     putBuffer<T, TS>(v.data(), v.size());
   }
+  template <class T, size_t N, typename TS = uint16_t>
+  void putVector(const std::array<T, N> &v) {
+    putBuffer<T, TS>(v.data(), v.size());
+  }
   //
   template <class T, typename TS = uint16_t> void getVector(std::vector<T> &v) {
     auto r = getBuffer<T, TS>();
     v.resize(r.second);
+    std::memcpy(v.data(), r.first, sizeof(T) * r.second);
+  }
+  template <class T, size_t N, typename TS = uint16_t>
+  void getVector(std::array<T, N> &v) {
+    auto r = getBuffer<T, TS>();
     std::memcpy(v.data(), r.first, sizeof(T) * r.second);
   }
 

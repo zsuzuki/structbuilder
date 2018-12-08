@@ -167,6 +167,7 @@ protected:
   uint32_t max_speed;
   std::vector<uint8_t> ranking;
   std::vector<float> line;
+  std::array<int32_t, 8> line2;
   std::array<Note, 4> note;
   Child child;
   std::vector<Entry> entry_list;
@@ -200,6 +201,10 @@ public:
     {
       if (line[i] != other.line[i]) return false;
     }
+    for (size_t i = 0; i < line2.size(); i++)
+    {
+      if (line2[i] != other.line2[i]) return false;
+    }
     for (size_t i = 0; i < note.size(); i++)
     {
       if (note[i] != other.note[i]) return false;
@@ -222,6 +227,7 @@ public:
     max_speed = other.max_speed;
     ranking = other.ranking;
     line = other.line;
+    line2 = other.line2;
     note = other.note;
     child = other.child;
     entry_list = other.entry_list;
@@ -270,6 +276,10 @@ public:
   size_t getLineSize() const { return line.size(); }
   void appendLine(float n) { line.emplace_back(n); }
   void resizeLine(size_t sz) { line.resize(sz); }
+  //
+  const int32_t getLine2(int idx) const { return line2[idx]; }
+  void setLine2(int idx, int32_t n) { line2[idx] = n; }
+  size_t getLine2Size() const { return line2.size(); }
   //
   const Note& getNote(int idx) const { return note[idx]; }
   void setNote(int idx, Note& n) { note[idx] = n; }

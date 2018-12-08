@@ -43,6 +43,9 @@ void Test::serializeJSON(json& j) {
     for (auto& tLine : line) {
         jsonObject["line"].push_back(tLine);
     }
+    for (auto& tLine2 : line2) {
+        jsonObject["line2"].push_back(tLine2);
+    }
     for (auto& tNote : note) {
         json     jNote;
         jNote["page"] = tNote.page;
@@ -70,8 +73,13 @@ void Test::deserializeJSON(json& j) {
     if (!jsonReader["index"].is_null())
         bit_field.index = jsonReader["index"];
     if (!jsonReader["beer_type"].is_null())
-    bit_field.beer_type = static_cast<unsigned>
+    {
+      if (jsonReader["beer_type"].is_number())
+        bit_field.beer_type = jsonReader["beer_type"];
+      else
+        bit_field.beer_type = static_cast<unsigned>
         (enum_BeerType_map.at(jsonReader["beer_type"].get<std::string>()));
+    }
     if (!jsonReader["generation"].is_null())
         bit_field.generation = jsonReader["generation"];
     if (!jsonReader["enabled"].is_null())
@@ -83,35 +91,46 @@ void Test::deserializeJSON(json& j) {
     max_speed = jsonReader["max_speed"];
     }
     if (!jsonReader["ranking"].is_null()) {
-    json jRanking = jsonReader["ranking"];
-    ranking.reserve(jRanking.size());
-    ranking.resize(0);
-    for (auto& jRankingIt : jRanking) {
-        ranking.push_back(jRankingIt);
-    }
+      json jRanking = jsonReader["ranking"];
+      ranking.reserve(jRanking.size());
+      ranking.resize(0);
+      for (auto& jRankingIt : jRanking) {
+          ranking.push_back(jRankingIt);
+      }
     }
     if (!jsonReader["line"].is_null()) {
-    json jLine = jsonReader["line"];
-    line.reserve(jLine.size());
-    line.resize(0);
-    for (auto& jLineIt : jLine) {
-        line.push_back(jLineIt);
+      json jLine = jsonReader["line"];
+      line.reserve(jLine.size());
+      line.resize(0);
+      for (auto& jLineIt : jLine) {
+          line.push_back(jLineIt);
+      }
     }
+    if (!jsonReader["line2"].is_null()) {
+      json jLine2 = jsonReader["line2"];
+      int jLine2Index = 0;
+      for (auto& jLine2It : jLine2) {
+        if (jLine2Index < 8) {
+          line2[jLine2Index] = jLine2It;
+          jLine2Index++;
+        }
+      }
     }
     if (!jsonReader["note"].is_null()) {
-    json jNote = jsonReader["note"];
-    int jNoteIndex = 0;
-    for (auto& jNoteIt : jNote) {
-      if (jNoteIndex < 4) {
-        auto& tObj = note[jNoteIndex];
+      json jNote = jsonReader["note"];
+      int jNoteIndex = 0;
+      for (auto& jNoteIt : jNote) {
+        if (jNoteIndex < 4) {
+          auto& tObj = note[jNoteIndex];
     if (!jNoteIt["page"].is_null()) {
     tObj.page = jNoteIt["page"];
     }
     if (!jNoteIt["line"].is_null()) {
     tObj.line = jNoteIt["line"];
     }
-        jNoteIndex++;}
-    }
+          jNoteIndex++;
+        }
+      }
     }
     if (!jsonReader["child"].is_null()) {
     if (!jsonReader["child"]["age"].is_null())
@@ -123,10 +142,10 @@ void Test::deserializeJSON(json& j) {
     }
     }
     if (!jsonReader["entry_list"].is_null()) {
-    json jEntryList = jsonReader["entry_list"];
-    entry_list.reserve(jEntryList.size());
-    entry_list.resize(0);
-    for (auto& jEntryListIt : jEntryList) {Entry tObj{};
+      json jEntryList = jsonReader["entry_list"];
+      entry_list.reserve(jEntryList.size());
+      entry_list.resize(0);
+      for (auto& jEntryListIt : jEntryList) {Entry tObj{};
     if (!jEntryListIt["name"].is_null()) {
     tObj.name = jEntryListIt["name"];
     }
@@ -138,9 +157,8 @@ void Test::deserializeJSON(json& j) {
     }
     if (!jEntryListIt["wins"].is_null()) {
     tObj.wins = jEntryListIt["wins"];
-    }
-        entry_list.emplace_back(tObj);
-    }
+    }entry_list.emplace_back(tObj);
+      }
     }
 }
 

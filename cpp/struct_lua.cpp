@@ -38,6 +38,7 @@ void Test::setLUA(sol::state& lua)
     "max_speed", &Test::max_speed,
     "ranking", &Test::ranking,
     "line", &Test::line,
+    "line2", &Test::line2,
     "note", &Test::note,
     "child", &Test::child,
     "entry_list", &Test::entry_list,

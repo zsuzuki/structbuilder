@@ -17,6 +17,7 @@ size_t Test::getSerializeSize() const {
     r += sizeof(max_speed);
     r += sizeof(uint16_t) + sizeof(uint8_t) * ranking.size();
     r += sizeof(uint16_t) + sizeof(float) * line.size();
+    r += sizeof(uint16_t) + sizeof(int32_t) * line2.size();
     r += sizeof(uint16_t);
     for (auto& tNote : note) {
     r += sizeof(tNote.page);
@@ -41,6 +42,7 @@ void Test::serialize(Serializer& ser) {
     ser.put<uint32_t>(max_speed);
     ser.putVector<uint8_t>(ranking);
     ser.putVector<float>(line);
+    ser.putVector<int32_t>(line2);
     ser.put<uint16_t>(note.size());
     for (auto& tNote : note) {
     ser.put<int>(tNote.page);
@@ -65,6 +67,7 @@ void Test::deserialize(Serializer& ser) {
     max_speed = ser.get<uint32_t>();
     ser.getVector<uint8_t>(ranking);
     ser.getVector<float>(line);
+    ser.getVector<int32_t>(line2);
     auto tNoteSize = ser.get<uint16_t>();
     for (size_t cNote = 0; cNote < tNoteSize; cNote++) {
         Note tNote{};
