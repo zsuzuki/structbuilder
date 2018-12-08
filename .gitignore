@@ -1,3 +1,4 @@
 structbuilder
 *.exe
 .vscode/
+build/

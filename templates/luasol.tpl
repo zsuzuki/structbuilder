@@ -3,10 +3,10 @@
 // by structbuilder<https://github.com/zsuzuki/structbuilder>
 //
 #include <sol/sol.hpp>
-{{if .HeaderNameJ}}{{if .HeaderGlobalJ}}
-#include <{{.HeaderNameJ}}>
+{{if .HeaderNameL}}{{if .HeaderGlobalL}}
+#include <{{.HeaderNameL}}>
 {{else}}
-#include "{{.HeaderNameJ}}"
+#include "{{.HeaderNameL}}"
 {{end}}{{end}}
 
 {{if .NameSpace}}namespace {{.NameSpace}} {
