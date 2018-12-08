@@ -7,7 +7,7 @@
         {{myName}}bit_field.{{.Name}} = {{getObj}}{{getStr}}["{{.Name}}"];
       else
         {{myName}}bit_field.{{.Name}} = static_cast<unsigned>
-        (enum_{{.CapName}}_map.at({{getObj}}{{getStr}}["{{.Name}}"].get<std::string>()));
+        (enum_{{.Cast}}_map.at({{getObj}}{{getStr}}["{{.Name}}"].get<std::string>()));
     }
     {{- else}}
         {{myName}}bit_field.{{.Name}} = {{getObj}}{{getStr}}["{{.Name}}"];

@@ -1,6 +1,6 @@
 {{- define "json_child_out"}}
 {{- with .BitField}}{{range .}}{{if .Cast}}
-    {{getObj}}{{getStr}}["{{.Name}}"] = enum_{{.CapName}}_list[(int){{myName}}bit_field.{{.Name}}];
+    {{getObj}}{{getStr}}["{{.Name}}"] = enum_{{.Cast}}_list[(int){{myName}}bit_field.{{.Name}}];
     {{- else}}
     {{getObj}}{{getStr}}["{{.Name}}"] = ({{if .IsSigned}}signed{{else}}unsigned{{end}}){{myName}}bit_field.{{.Name}};
     {{- end}}
