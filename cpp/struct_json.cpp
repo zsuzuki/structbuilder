@@ -29,9 +29,14 @@ const std::map<std::string, Test::BeerType> enum_BeerType_map = {
 
 //
 const char*
-Test::getStringBeerType(BeerType n)
+Test::getStringFromBeerType(BeerType n)
 {
     return enum_BeerType_list[(int)n];
+}
+Test::BeerType
+Test::getEnumFromBeerType(const std::string s)
+{
+    return enum_BeerType_map.at(s);
 }
 
 //

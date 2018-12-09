@@ -92,7 +92,8 @@ public:{{end -}}
   void serializeJSON({{.SJson}}& json);
   void deserializeJSON({{.SJson}}& json);
   {{- with .EnumList}}{{range .}}
-  static const char* getString{{.Name}}({{.Name}} n);
+  static const char* getStringFrom{{.Name}}({{.Name}} n);
+  {{.Name}} getEnumFrom{{.Name}}(const std::string s);
   {{- end}}{{end}}
 {{- end}}
 {{- if .UseLua}}

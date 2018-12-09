@@ -32,9 +32,14 @@ const std::map<std::string, {{$EnumName}}> enum_{{.Name}}_map = {
 //
 {{- with .TopStruct.EnumList}}{{range .}}
 const char*
-{{$StructName}}::getString{{.Name}}({{.Name}} n)
+{{$StructName}}::getStringFrom{{.Name}}({{.Name}} n)
 {
     return enum_{{.Name}}_list[(int)n];
+}
+{{$StructName}}::{{.Name}}
+{{$StructName}}::getEnumFrom{{.Name}}(const std::string s)
+{
+    return enum_{{.Name}}_map.at(s);
 }
 {{- end}}{{end}}
 
