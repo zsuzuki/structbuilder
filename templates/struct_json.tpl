@@ -30,6 +30,15 @@ const std::map<std::string, {{$EnumName}}> enum_{{.Name}}_map = {
 } // namespace
 
 //
+{{- with .TopStruct.EnumList}}{{range .}}
+const char*
+{{$StructName}}::getString{{.Name}}({{.Name}} n)
+{
+    return enum_{{.Name}}_list[(int)n];
+}
+{{- end}}{{end}}
+
+//
 void {{$StructName}}::serializeJSON(json& j) {
     json jsonObject;
 {{pushObj "jsonObject"}}{{template "json_child_out" .TopStruct}}{{popObj}}

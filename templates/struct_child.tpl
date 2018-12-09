@@ -90,7 +90,11 @@ public:{{end -}}
 {{- if .SJson}}
   //
   void serializeJSON({{.SJson}}& json);
-  void deserializeJSON({{.SJson}}& json);{{end}}
+  void deserializeJSON({{.SJson}}& json);
+  {{- with .EnumList}}{{range .}}
+  static const char* getString{{.Name}}({{.Name}} n);
+  {{- end}}{{end}}
+{{- end}}
 {{- if .UseLua}}
   //
   static void setLUA(sol::state& lua);{{end}}

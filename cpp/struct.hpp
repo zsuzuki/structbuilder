@@ -243,6 +243,7 @@ public:
   //
   void serializeJSON(nlohmann::json& json);
   void deserializeJSON(nlohmann::json& json);
+  static const char* getStringBeerType(BeerType n);
   //
   static void setLUA(sol::state& lua);
   // interface

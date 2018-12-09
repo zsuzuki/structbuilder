@@ -28,6 +28,13 @@ const std::map<std::string, Test::BeerType> enum_BeerType_map = {
 } // namespace
 
 //
+const char*
+Test::getStringBeerType(BeerType n)
+{
+    return enum_BeerType_list[(int)n];
+}
+
+//
 void Test::serializeJSON(json& j) {
     json jsonObject;
 
