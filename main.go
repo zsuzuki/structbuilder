@@ -36,6 +36,12 @@ var (
 			return ""
 		},
 		"getStr": func() string { return strings.Join(tmplPushStr, "") },
+		"getStrSep": func(s, v string) string {
+			if len(tmplPushStr) == 0 {
+				return v
+			}
+			return strings.Join(tmplPushStr, s) + s + v
+		},
 		"setMyName": func(n string) string {
 			myName = n
 			return ""
