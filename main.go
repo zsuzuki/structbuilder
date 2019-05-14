@@ -174,7 +174,7 @@ func main() {
 			os.Exit(1)
 		}
 		if gInfo.TopStruct.SJson != "" {
-			err = outputTemplateFile(gInfo, *sjsonFile, []string{"struct_json.tpl", "struct_json_child_out.tpl", "struct_json_child_in.tpl"})
+			err = outputTemplateFile(gInfo, *sjsonFile, []string{"struct_json.tpl", "struct_json_child_out.tpl", "struct_json_child_in.tpl", "struct_json_enum.tpl"})
 			if err != nil {
 				fmt.Println(err.Error())
 				os.Exit(1)

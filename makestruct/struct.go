@@ -86,6 +86,7 @@ type StructInfo struct {
 	Serializer  string
 	SJson       string
 	UseLua      bool
+	OutputEnum  bool
 }
 
 // GlobalInfo is overall defined information
@@ -104,6 +105,7 @@ type GlobalInfo struct {
 	BinVersion    int64
 	Compare       bool
 	Copy          bool
+	SJson         string
 }
 
 // build string list from toml attribute
@@ -143,7 +145,7 @@ func getInitial(value interface{}, typeStr string, castType string) string {
 
 // parse struct
 //
-func parseStruct(members []*toml.Tree, sname string) (StructInfo, error) {
+func parseStruct(members []*toml.Tree, sname string, outputEnum bool) (StructInfo, error) {
 	sInfo := StructInfo{
 		Name:        sname,
 		BitField:    []BitField{},
@@ -153,6 +155,7 @@ func parseStruct(members []*toml.Tree, sname string) (StructInfo, error) {
 		InitialList: []Initial{},
 		IsClass:     false,
 		UseLua:      false,
+		OutputEnum:  outputEnum,
 	}
 	for _, m := range members {
 		name := m.Get("name")
@@ -246,7 +249,7 @@ func parseStruct(members []*toml.Tree, sname string) (StructInfo, error) {
 			ctype := m.Get(typeStr)
 			if ctype != nil {
 				// child is new struct
-				cS, err := parseStruct(ctype.([]*toml.Tree), typeStr)
+				cS, err := parseStruct(ctype.([]*toml.Tree), typeStr, outputEnum)
 				if err != nil {
 					return sInfo, err
 				}
@@ -317,6 +320,7 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string, luaF
 		UseLua:        false,
 		BinVersion:    0,
 		Compare:       false,
+		SJson:         "",
 	}
 	fullHpp, _ := filepath.Abs(hpp)
 	hppPath := filepath.Dir(fullHpp)
@@ -339,8 +343,14 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string, luaF
 	if members == nil {
 		return gInfo, &myError{msg: "not have members"}
 	}
+	serJ := tomlConfig.Get("serializer_json")
+	outputEnum := false
+	if serJ != nil {
+		gInfo.SJson = serJ.(string)
+		outputEnum = true
+	}
 
-	topStruct, err := parseStruct(members.([]*toml.Tree), sn.(string))
+	topStruct, err := parseStruct(members.([]*toml.Tree), sn.(string), outputEnum)
 	if err != nil {
 		return gInfo, err
 	}
@@ -351,10 +361,6 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string, luaF
 		if bv != nil {
 			gInfo.BinVersion = bv.(int64)
 		}
-	}
-	serJ := tomlConfig.Get("serializer_json")
-	if serJ != nil {
-		topStruct.SJson = serJ.(string)
 	}
 	lua := tomlConfig.Get("lua")
 	if lua != nil {
@@ -368,6 +374,7 @@ func ParseToml(tomlConfig *toml.Tree, hpp string, bser string, json string, luaF
 	if cp != nil {
 		gInfo.Copy = cp.(bool)
 	}
+	topStruct.SJson = gInfo.SJson
 	topStruct.UseLua = gInfo.UseLua
 	topStruct.IsClass = true
 	gInfo.TopStruct = topStruct

@@ -1,4 +1,4 @@
-{{- define "json_child_out"}}
+{{- define "json_child_out"}}{{$omn := myName}}
 {{- with .BitField}}{{range .}}{{if .Cast}}
     {{getObj}}{{getStr}}["{{.Name}}"] = enum_{{.Cast}}_list[(int){{myName}}bit_field.{{.Name}}];
     {{- else}}
@@ -7,7 +7,7 @@
 {{- end}}{{end}}
 {{- with .Members}}{{range .}}{{$vn := printf "t%s" .CapName}}
 {{- if .Container}}
-    for (auto& {{$vn}} : {{.Name}}) {
+    for (auto& {{$vn}} : {{myName}}{{.Name}}) {
 {{- if .HasChild}}
         {{$on := printf "    j%s" .CapName}}json {{$on}};{{pushObj $on}}
 {{- setMyName $vn}}{{template "json_child_out" .Child}}{{clearMyName}}
@@ -15,8 +15,8 @@
 {{- else}}
         {{getObj}}{{getStr}}["{{.Name}}"].push_back(t{{.CapName}});{{end}}
     }
-{{- else if .HasChild -}}
-{{setMyName .Name}}{{pushStr "[\"" .Name "\"]" -}}{{template "json_child_out" .Child}}{{popStr}}{{clearMyName}}
+{{- else if .HasChild -}}{{$mn := printf "%s%s" $omn .Name}}
+{{setMyName $mn}}{{pushStr "[\"" .Name "\"]" -}}{{template "json_child_out" .Child}}{{popStr}}{{clearMyName}}
 {{- else}}
     {{getObj}}{{getStr}}["{{.Name}}"] = {{myName}}{{.Name}};
 {{- end}}

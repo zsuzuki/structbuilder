@@ -1,4 +1,4 @@
-{{- define "json_child_in"}}
+{{- define "json_child_in"}}{{$omn := myName}}
 {{- with .BitField}}{{range .}}
     if (!{{getObj}}{{getStr}}["{{.Name}}"].is_null())
     {{- if .Cast}}
@@ -39,9 +39,9 @@
 {{- if not .IsStatic}}{{.Name}}.emplace_back(tObj);{{end}}
 {{- else}}
     {{- if .IsStatic}}
-          {{.Name}}[{{$jn}}Index] = {{$jn}}It;
+          {{$omn}}{{.Name}}[{{$jn}}Index] = {{$jn}}It;
     {{- else}}
-          {{.Name}}.push_back({{$jn}}It);
+          {{$omn}}{{.Name}}.push_back({{$jn}}It);
     {{- end}}
 {{- end}}
 {{- if .IsStatic}}
@@ -49,8 +49,8 @@
         }
 {{- end}}
       }
-{{- else if .HasChild -}}
-{{- setMyName .Name}}{{pushStr "[\"" .Name "\"]" -}}{{template "json_child_in" .Child}}{{popStr}}{{clearMyName}}
+{{- else if .HasChild -}}{{$mn := printf "%s%s" $omn .Name}}
+{{- setMyName $mn}}{{pushStr "[\"" .Name "\"]" -}}{{template "json_child_in" .Child}}{{popStr}}{{clearMyName}}
 {{- else}}
     {{myName}}{{.Name}} = {{getObj}}{{getStr}}["{{.Name}}"];
 {{- end}}

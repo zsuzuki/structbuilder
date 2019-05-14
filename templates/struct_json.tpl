@@ -15,33 +15,8 @@ using json = {{.TopStruct.SJson}};
 
 {{if .NameSpace}}namespace {{.NameSpace}} {
 {{- end}}
+{{template "json_enum" .TopStruct}}
 {{$StructName := .TopStruct.Name}}
-namespace {
-{{- with .TopStruct.EnumList}}{{range .}}
-//{{$EnumName := print $StructName "::" .Name}}
-const char* enum_{{.Name}}_list[] = {
-   {{range .List}} "{{.}}",{{end}}
-};
-const std::map<std::string, {{$EnumName}}> enum_{{.Name}}_map = {
-{{- range .List}}
-    { "{{.}}", {{$EnumName}}::{{.}} },{{end}}
-};
-{{end}}{{end -}}
-} // namespace
-
-//
-{{- with .TopStruct.EnumList}}{{range .}}
-const char*
-{{$StructName}}::getStringFrom{{.Name}}({{.Name}} n)
-{
-    return enum_{{.Name}}_list[(int)n];
-}
-{{$StructName}}::{{.Name}}
-{{$StructName}}::getEnumFrom{{.Name}}(const std::string s)
-{
-    return enum_{{.Name}}_map.at(s);
-}
-{{- end}}{{end}}
 
 //
 void {{$StructName}}::serializeJSON(json& j) {
